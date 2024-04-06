@@ -1,0 +1,6 @@
+/.ipynb_checkpoints/*
+/activate_env.bat
+/data/raw_pdf_files/*
+/doc_analysis.txt
+/utility/.ipynb_checkpoints/*
+/utility/__pycache__/*
