@@ -30,28 +30,34 @@ def remove_currency(text) -> str:
     modified_text = re.sub(r'[$€£¥₹₽₩₺₴₭₪₨]', " ", text)
     return modified_text
 
+
 def remove_decimal_numbers(text) -> str:
     # Use regular expression to remove decimal point numbers, sometimes followed by "p" for percent
     modified_text = re.sub(r'\b[(]?(\d{1,3},)*\d{0,3}.\d+[pkKmMbB)]?\b', ' ', text)
     return modified_text
 
+
 def remove_parenthesis(text) -> str:
     modified_text = re.sub(r'\(\s*\d*[a-zA-Z]?\+?\s*\)', ' ', text)
     return modified_text
+
 
 def remove_percent(text) -> str:
     # Use regular expression to remove "per cent" text and percent symbols
     modified_text = re.sub(r'\b(?:per cent|%)\b', ' ', text)
     return modified_text
 
+
 def remove_lonely_symbols(text) -> str:
     modified_text = re.sub(r"\s+(\(?\d{0,2}%[),]?|\'|N/A|\(|p|per cent|\*|·|million|,|\.|-|:)\s+", ' ', text)
     return modified_text
+
 
 def remove_extra_spaces(text) -> str:
     # Use regular expression to remove extra spaces
     modified_text = re.sub(r'\s+', ' ', text)
     return modified_text.strip()
+
 
 def remove_extra_points(text) -> str:
     modified_text = re.sub(r'\.{2,}', r"\.", text)
@@ -69,18 +75,23 @@ def remove_emails(text):
     modified_text = re.sub(r'\S+@\S+', ' ', text)
     return modified_text
 
+
 def remove_mult_underscore(text):
     modified_text = re.sub(r'__+', " ", text)
     return modified_text
 
+
 def remove_space_betw_newlines(text):
     return re.sub(r'\n\s*\n', '\n\n', text)
+
 
 def remove_newline(text) -> str:
     return re.sub(r'\n', ' ', text)
 
+
 def fix_split_words(text) -> str:
     return re.sub(r'(?<=\w)-\n\s{0,1}(?=\w)', "", text)
+
 
 def clean_text(text) -> str:
     text = remove_special_characters(text)

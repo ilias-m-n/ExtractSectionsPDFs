@@ -4,3 +4,5 @@
 /doc_analysis.txt
 /utility/.ipynb_checkpoints/*
 /utility/__pycache__/*
+/output/*
+/sample_page_locations.xlsx

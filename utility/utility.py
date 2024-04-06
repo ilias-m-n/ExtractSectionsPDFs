@@ -1,18 +1,13 @@
-import fitz
-import os
-import re
-from collections import Counter
+import string
 
+import fitz
 import nltk
 from nltk.stem import PorterStemmer, WordNetLemmatizer
-from nltk.corpus import stopwords
-import string
-import spacy
-
 
 
 def load_file_fitz(path):
     return fitz.open(path)
+
 
 # Clean Text Preliminary
 def full_process_text(text):
