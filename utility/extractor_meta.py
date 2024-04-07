@@ -31,7 +31,7 @@ _auditor_11 = ["management ... is responsible for the preparation and fair prese
                "the preparation of the ... are the responsibility of",
                "responsibilities for preparing the ... in accordance with",
                "these consolidated financial statements are the responsibility of",
-               "is responsible for",
+                   "is responsible for",
                "directors ... are responsible for the preparation"
                ]
 
