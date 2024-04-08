@@ -75,7 +75,11 @@ class LinkedListAnchorHitInfo:
             page_nums = prev.page_nums + current.page_nums
 
             nn = Node(prev.prev, page_nums, hits, hits_union)
-            prev.prev.next = nn
-            current.next.prev = nn
+            if prev != self.head:
+                prev.prev.next = nn
+            else:
+                self.head = nn
+            if current.next:
+                current.next.prev = nn
             nn.next = current.next
             current = nn

@@ -1,8 +1,13 @@
 /.ipynb_checkpoints/*
 /activate_env.bat
 /data/raw_pdf_files/*
+/data/first_build/*
+/data/testing_meta/*
+/first_build/*
+/testing_meta/*
 /doc_analysis.txt
 /utility/.ipynb_checkpoints/*
 /utility/__pycache__/*
 /output/*
 /sample_page_locations.xlsx
+/fix.csv

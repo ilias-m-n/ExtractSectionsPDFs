@@ -11,8 +11,12 @@ _auditor_page_head = ["report of independent auditors",
 "we have audited the accompanying",
 "we have audited the ... prepared by",
 "we have audited the ... of",
+
+"we have audited"
+
+"i have audited the consolidated balance sheets of"
 """
-_auditor_1 = ["we have audited the",
+_auditor_1 = ["have audited the",
               ]
 
 """
@@ -26,13 +30,16 @@ _auditor_1 = ["we have audited the",
 "directors are responsible for the preparation and fair presentation of ... in accordance with",
 "directors ... are responsible for the preparation and true and fair presentation of ... in accordance with",
 "directors are responsible for the preparation of ... give a true and fair view",
+
+"these financial statements are the responsibility of the Company's management"
 """
 _auditor_11 = ["management ... is responsible for the preparation and fair presentation",
                "the preparation of the ... are the responsibility of",
                "responsibilities for preparing the ... in accordance with",
                "these consolidated financial statements are the responsibility of",
                    "is responsible for",
-               "directors ... are responsible for the preparation"
+               "directors ... are responsible for the preparation",
+               "are the responsibility of"
                ]
 
 """
@@ -41,23 +48,40 @@ _auditor_11 = ["management ... is responsible for the preparation and fair prese
 "our responsibility is to audit and express an opinion ... in accordance with",
 
 
-our responsibility is to express and opinion",
+"our responsibility is to express and opinion",
+
+"my responsibility is to express an opinion on these statements based on my audit."
 """
-_auditor_12 = ["our responsibility is to express an opinion",
-               "our responsibility is to audit the",
+_auditor_12 = ["responsibility is to express an opinion",
+               "responsibility is to audit the",
                "our responsibilities",
+               'my responsibilities'
                ]
 
 """
 "we conducted our audit in accordance with",
 "we conducted our audit of ... in accordance with",
+
+"we conducted an independent audit in order to express an opinion",
+"our ... audit has been performed in accordance with",
+"our audit was conducted",
+
+"we conducted our audits in accordance with",
+"we conducted our audit ... in accordance with",
+"we conducted an independent audit in order to express an opinion",
+"our ... audit has been performed in accordance with",
+"our audit was conducted",
+
+"I conducted my audit in accordance with "
 """
-_auditor_2 = ["we conducted our audits in accordance with",
-              "we conducted our audit ... in accordance with",
-              "we conducted an independent audit in order to express an opinion",
-              "our ... audit has been performed in accordance with",
-              "our audit was conducted",
+_auditor_2 = ["conducted our audits in accordance with",
+              "conducted our audit ... in accordance with",
+              "conducted an independent audit in order to express an opinion",
+              "audit has been performed in accordance with",
+              "audit was conducted",
               ]
+
+
 
 """
 "an audit involves performing procedures to obtain audit evidence about the amounts and disclosures in the financial statments",
@@ -82,10 +106,18 @@ _auditor_21 = ["an  ... audit involves ",
 "we believe that the audit evidence we have obtained is sufficient and appropriate to provide a basis for our opinion",
 "we believe that the audit evidence we have obtained ... is sufficient and appropriate to provide a basis for our opinion."
 "we believe that the ... audit evidence we have obtained ... is sufficient and appropriate to provide a basis for our audit opinion",
+
+"we believe that the ... audit evidence we have obtained ... is sufficient and appropriate to provide a basis for our ... opinion",
+"we believe that our audit provides a reasonable basis for our opinion",
+"we believe that our audits provide a reasonable basis for our opinion",
+
 """
 _auditor_3 = ["we believe that the ... audit evidence we have obtained ... is sufficient and appropriate to provide a basis for our ... opinion",
               "we believe that our audit provides a reasonable basis for our opinion",
               "we believe that our audits provide a reasonable basis for our opinion",
+              "I believe that the ... audit evidence I have obtained ... is sufficient and appropriate to provide a basis for my ... opinion",
+              "I believe that my audit provides a reasonable basis for my opinion",
+              "I believe that my audits provide a reasonable basis for my opinion",
               ]
 
 """
@@ -113,7 +145,11 @@ _auditor_3 = ["we believe that the ... audit evidence we have obtained ... is su
 _auditor_4 = ["in our opinion ... fairly ... in all material respects",
               "in our opinion ... comply with",
               "in our opinion ... true and fair view",
-              "in our opinion ... in accordance with"
+              "in our opinion ... in accordance with",
+              "in my opinion ... fairly ... in all material respects",
+              "in my opinion ... comply with",
+              "in my opinion ... true and fair view",
+              "in my opinion ... in accordance with"
               ]
 
 _auditor_sections = (_auditor_page_head, _auditor_1, _auditor_11, _auditor_12, _auditor_2, _auditor_21, _auditor_3, _auditor_4)

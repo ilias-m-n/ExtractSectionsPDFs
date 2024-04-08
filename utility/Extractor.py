@@ -179,7 +179,6 @@ class PageTextExtractor:
     def return_result(self):
         if self.flag_reduce:
             c = util.count_tokens(self.reduced_text)
-            print(self.reduced_text)
             return [self.reduced_text, int(c)]
         else:
             c = util.count_tokens(self.text)
@@ -270,8 +269,12 @@ class PageNumberExtractor:
     def find_section_hits(self):
         for section, anchors in self.section_anchors.items():
             self.hits_ll[section] = ll.LinkedListAnchorHitInfo()
+            # print(section)
             for page_num in self.text:
                 hits, hit_ids = self.find_anchor_hits(section, self.text[page_num], anchors)
+                # print(page_num, hit_ids)
+                # if page_num == 16:
+                    # print(self.text[16])
                 self.hits_ll[section].append(page_num + self.page_num_fixer, hits, hit_ids)
 
     def find_anchor_hits(self, section, page, anchors):
@@ -286,6 +289,7 @@ class PageNumberExtractor:
                         hits += 1
                         flag_hit = True
                         hit_ids.append(self.section_anchor_ids[section][sub_anchor])
+                        # print(pattern)
                         break
                 if flag_hit == True:
                     break
