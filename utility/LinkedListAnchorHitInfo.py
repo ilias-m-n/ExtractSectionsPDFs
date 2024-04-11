@@ -26,6 +26,13 @@ class LinkedListAnchorHitInfo:
         if self.max_hit < hits:
             self.max_hit = hits
 
+
+    def build_from_list(self, nodes: list):
+        self.head = None
+        for node in nodes:
+            self.append(*node)
+
+
     def print(self):
         current = self.head
         while current:
@@ -44,7 +51,8 @@ class LinkedListAnchorHitInfo:
     def remove_below_min_hits(self, min_hits, flag_only_max):
         current = self.head
         if flag_only_max:
-            min_hits = max(self.max_hit, min_hits)
+            min_hits = self.max_hit
+        min_hits = min(min_hits, self.max_hit)
         while current:
             if current.hits < min_hits:
                 if current.prev:
@@ -55,7 +63,7 @@ class LinkedListAnchorHitInfo:
                     current.next.prev = current.prev
             current = current.next
 
-    def combine_groups(self):
+    def combine_groups(self, flag_allow_duplicate_hit_ids = False):
         current = self.head
         prev = None
         while current.next:
@@ -65,7 +73,7 @@ class LinkedListAnchorHitInfo:
             if (current.hits == 0) or (prev.hits == 0):
                 continue
             hits_intersection = prev.hit_ids.intersection(current.hit_ids)
-            if hits_intersection:
+            if hits_intersection and not flag_allow_duplicate_hit_ids:
                 continue
 
             hits_union = prev.hit_ids.union(current.hit_ids)
@@ -83,3 +91,64 @@ class LinkedListAnchorHitInfo:
                 current.next.prev = nn
             nn.next = current.next
             current = nn
+
+    def combine_skip_groups(self, flag_allow_duplicate_hit_ids = False):
+        current = self.head
+        prev = None
+        pprev = None
+
+        flag_first_run = True
+
+        while current and current.next and current.next.next:
+            if flag_first_run:
+                pprev = current
+                prev = current.next
+                current = current.next.next
+                flag_first_run = False
+            else:
+                pprev = prev
+                prev = current
+                current = current.next
+
+            # print(pprev.hit_ids, prev.hit_ids, current.hit_ids)
+
+            if (current.hits == 0) or (pprev.hits == 0):
+                continue
+            skip_hits_intersection = pprev.hit_ids.intersection(current.hit_ids)
+            if skip_hits_intersection and not flag_allow_duplicate_hit_ids:
+                continue
+
+            hits_union = pprev.hit_ids.union(current.hit_ids)
+            hits = len(hits_union)
+            if self.max_hit < hits:
+                self.max_hit = hits
+            page_nums = pprev.page_nums + prev.page_nums + current.page_nums
+
+            nn = Node(pprev.prev, page_nums, hits, hits_union)
+
+            if pprev != self.head:
+                pprev.prev.next = nn
+            else:
+                self.head = nn
+            if current.next:
+                current.next.prev = nn
+            nn.next = current.next
+            current = nn
+
+    def fix_overlaying_sections(self, ll_other):
+        c = self.head
+        co = ll_other.head
+        while c:
+            if c.hits == 0 or co.hits == 0:
+                c = c.next
+                co = co.next
+                continue
+            if c.hits > co.hits:
+                co.hits = 0
+                co.hit_ids = []
+            elif c.hits < co.hits:
+                c.hits = 0
+                c.hit_ids = []
+            c = c.next
+            co = co.next
+

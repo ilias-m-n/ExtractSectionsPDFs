@@ -4,6 +4,11 @@ import fitz
 import nltk
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from tiktoken import get_encoding
+import cv2
+import numpy as np
+from PIL import Image
+from transformers import pipeline
+from spellchecker import SpellChecker
 
 
 def load_file_fitz(path):
@@ -11,6 +16,48 @@ def load_file_fitz(path):
 
 def remove_extra_spaces(text):
     return " ".join(text.split())
+
+def correct_text(text):
+    spell = SpellChecker()
+
+    # Find those words in the text that may be misspelled
+    misspelled = spell.unknown(text.split())
+
+    corrected_text = []
+    for word in text.split():
+        # If the word is misspelled, suggest the most likely correction
+        if word in misspelled:
+            corrected_word = spell.correction(word)
+            if not corrected_word:
+                continue
+            corrected_text.append(corrected_word)
+        else:
+            corrected_text.append(word)
+
+    # Join corrected words back into a string
+    return ' '.join(corrected_text)
+
+def preprocess_image_for_ocr(img):
+
+    img = np.array(img)
+
+    # If the image is in RGB (3 channels), convert it to BGR for OpenCV
+    if img.ndim == 3:
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+    # Convert to grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # Apply adaptive thresholding to binarize the image
+    # binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    _, binary = cv2.threshold(gray, 175, 255, cv2.THRESH_BINARY)
+
+    # back to pillow format
+    img_pil = Image.fromarray(binary)
+
+    img_pil.show()
+
+    return img_pil
 
 # Clean Text Preliminary
 def full_process_text(text):

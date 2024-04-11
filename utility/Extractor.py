@@ -1,19 +1,25 @@
+import io
 import math
 import os
 import re
+import sys
 import time
 from collections import Counter
+from datetime import datetime
 from itertools import product, combinations
 from pprint import pprint
-from datetime import datetime
 
 import fitz
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+from PIL import Image
 
 from . import LinkedListAnchorHitInfo as ll
 from . import extractor_meta as em
 from . import text_cleaning as tc
 from . import utility as util
 
+import traceback
 
 
 class PageTextExtractor:
@@ -25,7 +31,8 @@ class PageTextExtractor:
                  flag_reduce,
                  anchors,
                  anchor_add_word_window,
-                 allowance_wildcards_reg_matches):
+                 allowance_wildcards_reg_matches,
+                 flag_do_ocr = False):
 
         self.doc_id = doc_id
         self.path = path
@@ -39,15 +46,20 @@ class PageTextExtractor:
         self.anchor_add_word_window = anchor_add_word_window
         self.allowance_wildcards_reg_matches = allowance_wildcards_reg_matches
 
+        self.flag_do_ocr = flag_do_ocr
+
         self.pdf = None
         self.text = dict()
         self.text_lemma = None
 
         self.lemma_anchor_intervals = list()
         self.anchor_intervals_word_pos = None
+        self.anchor_term_intervals_word_pos = None
         self.anchor_index_intervals = list()
+        self.anchor_index_term_intervals = list()
 
         self.reduced_text = list()
+        self.terms = list()
 
     def run(self):
         self.parse_pdf()
@@ -69,6 +81,13 @@ class PageTextExtractor:
             if index in self.page_nums:
                 text = page.get_text()
                 self.text[index] = text
+                if (text == "") and self.flag_do_ocr:
+                    pix = page.get_pixmap()
+                    img_bytes = pix.tobytes('png')
+                    img = Image.open(io.BytesIO(img_bytes))
+                    # img = util.preprocess_image_for_ocr(img)
+                    text = pytesseract.image_to_string(img, config="--oem 1 --psm 4")
+                    self.text[index] = util.correct_text(text)
 
     def preprocess_text(self):
         for page_num in self.text:
@@ -98,7 +117,6 @@ class PageTextExtractor:
         self.find_anchor_intervals()
         self.fix_lemma_indeces_to_unprocessed_text()
 
-
     def find_anchor_intervals(self):
         for anchor in self.anchors:
             self.text_lemma = util.full_process_text(self.text)
@@ -108,8 +126,6 @@ class PageTextExtractor:
                 for match in re.finditer(sub_anchor_pattern, self.text_lemma):
                     self.lemma_anchor_intervals.append((match.start(), match.end()))
         self.lemma_anchor_intervals = self.merge_overlaying_indeces(self.lemma_anchor_intervals)
-
-
 
     def merge_overlaying_indeces(self, intervals):
         sorted_intervals = sorted(intervals, key=lambda x: x[0])
@@ -137,10 +153,14 @@ class PageTextExtractor:
                 continue
             lemma_char_pos_to_word_pos.append(curr_word_index)
         anchor_intervals_word_pos = []
+        anchor_term_intervals_word_pos = []
         for l_int in self.lemma_anchor_intervals:
             start = lemma_char_pos_to_word_pos[l_int[0]]
-            end = lemma_char_pos_to_word_pos[l_int[1]-1] + self.anchor_add_word_window
+            end = lemma_char_pos_to_word_pos[l_int[1] - 1] + self.anchor_add_word_window
+            start_term = lemma_char_pos_to_word_pos[l_int[1] - 1] + 1
+            end_term = end
             anchor_intervals_word_pos.append((start, end))
+            anchor_term_intervals_word_pos.append((start_term, end_term))
         anchor_intervals_word_pos = self.merge_overlaying_indeces(anchor_intervals_word_pos)
         # nnn = len(self.text.split())
         # lll = len(self.text_lemma.split())
@@ -153,7 +173,7 @@ class PageTextExtractor:
         #     print()
         #     # print(self.text_lemma)
         self.anchor_intervals_word_pos = anchor_intervals_word_pos
-
+        self.anchor_term_intervals_word_pos = anchor_term_intervals_word_pos
 
     def extract_segments(self):
         curr_word_index = 0
@@ -170,19 +190,23 @@ class PageTextExtractor:
 
             end_char_index = wordpos2charind[min(a_int[1], max(wordpos2charind.keys()))][-1]
             self.anchor_index_intervals.append([start_char_index, end_char_index])
-            self.reduced_text.append(self.text[start_char_index:end_char_index+1])
+            self.reduced_text.append(self.text[start_char_index:end_char_index + 1])
+        for a_int in self.anchor_term_intervals_word_pos:
+            start_char_index = wordpos2charind[a_int[0]][0]
+
+            end_char_index = wordpos2charind[min(a_int[1], max(wordpos2charind.keys()))][-1]
+            self.anchor_index_term_intervals.append([start_char_index, end_char_index])
+            self.terms.append(self.text[start_char_index:end_char_index + 1])
 
         self.reduced_text = "\n".join(self.reduced_text)
-
-
 
     def return_result(self):
         if self.flag_reduce:
             c = util.count_tokens(self.reduced_text)
-            return [self.reduced_text, int(c)]
+            return [self.reduced_text, int(c), self.terms]
         else:
             c = util.count_tokens(self.text)
-            return [self.text, int(c)]
+            return [self.text, int(c), self.terms]
 
 
 class PageNumberExtractor:
@@ -191,10 +215,14 @@ class PageNumberExtractor:
                  doc_id,
                  path,
                  section_anchors,
-                 min_anchor_occ_ratio=0,
+                 min_anchor_hit_ratio=0,
                  flag_only_max_hits=False,
                  flag_allow_overlapping_sections=False,
-                 flag_adjust_real_page_num=False):
+                 flag_adjust_real_page_num=False,
+                 flag_do_ocr = False,
+                 flag_allow_duplicate_hits_in_groups = False,
+                 sections_with_page_skip_groups = None,
+                 thresh_ocr = 100):
 
         self.doc_id = doc_id
         self.path = path
@@ -208,17 +236,22 @@ class PageNumberExtractor:
         self.num_anchors_per_section = {key: len(anchors) for key, anchors in self.section_anchors.items()}
 
         self.hits_ll = dict()
+        self.hits_ll_red = dict()
         self.section_anchor_ids = {}
         self.attach_anchor_id()
 
-        self.min_anchor_occ_ratio = min_anchor_occ_ratio
-        self.min_anchor_hits = {key: math.ceil(num * self.min_anchor_occ_ratio) \
+        self.min_anchor_hit_ratio = min_anchor_hit_ratio
+        self.min_anchor_hits = {key: math.ceil(num * self.min_anchor_hit_ratio) \
                                 for key, num in self.num_anchors_per_section.items()}
 
         self.flag_only_max_hits = flag_only_max_hits
         self.flag_allow_overlapping_sections = flag_allow_overlapping_sections
         self.flag_adjust_real_page_num = flag_adjust_real_page_num
         self.page_num_fixer = 1 if self.flag_adjust_real_page_num else 0
+        self.flag_do_ocr = flag_do_ocr
+        self.flag_allow_duplicate_hits_in_groups = flag_allow_duplicate_hits_in_groups
+        self.sections_with_page_skip_groups = sections_with_page_skip_groups if sections_with_page_skip_groups else []
+        self.thresh_ocr = thresh_ocr
 
         self.hits_dict = dict()
 
@@ -250,7 +283,16 @@ class PageNumberExtractor:
     def parse_pages(self):
         self.doc_num_pages = len(self.pdf)
         for index, page in enumerate(self.pdf):
-            self.text[index] = page.get_text()
+            text = page.get_text()
+            self.text[index] = text
+            if ((text == "") and self.flag_do_ocr) or len(text) < self.thresh_ocr:
+                pix = page.get_pixmap()
+                img_bytes = pix.tobytes('png')
+                img = Image.open(io.BytesIO(img_bytes))
+                # img = util.preprocess_image_for_ocr(img)
+                text = pytesseract.image_to_string(img, config="--oem 1 --psm 4")
+                self.text[index] = util.correct_text(text)
+
 
     def preprocess_text(self):
         for page_num in self.text:
@@ -273,8 +315,8 @@ class PageNumberExtractor:
             for page_num in self.text:
                 hits, hit_ids = self.find_anchor_hits(section, self.text[page_num], anchors)
                 # print(page_num, hit_ids)
-                # if page_num == 16:
-                    # print(self.text[16])
+                # if(page_num in [15, 16]):
+                #     print(self.text[page_num])
                 self.hits_ll[section].append(page_num + self.page_num_fixer, hits, hit_ids)
 
     def find_anchor_hits(self, section, page, anchors):
@@ -300,13 +342,27 @@ class PageNumberExtractor:
         self.combine_page_groups()
         if not self.flag_allow_overlapping_sections:
             self.fix_overlaying_section()
+        # self.fix_overlaying_section_ll()
+        # self.combine_page_groups()
 
 
     def combine_page_groups(self):
         for section in self.hits_ll:
-            self.hits_ll[section].combine_groups()
+            self.hits_ll[section].combine_groups(self.flag_allow_duplicate_hits_in_groups)
+            if section in self.sections_with_page_skip_groups:
+                self.hits_ll[section].combine_skip_groups(self.flag_allow_duplicate_hits_in_groups)
             self.hits_ll[section].remove_below_min_hits(self.min_anchor_hits[section], self.flag_only_max_hits)
             self.hits_dict[section] = self.hits_ll[section].to_dict()
+
+
+    def fix_overlaying_section_ll(self):
+        eles = []
+        for section in self.hits_ll:
+            eles.append(self.hits_ll[section])
+        for first in range(len(eles)):
+            for second in range(first + 1, len(eles)):
+                eles[first].fix_overlaying_sections(eles[second])
+
 
     def fix_overlaying_section(self):
         for pair in list(combinations(list(self.hits_dict.keys()), 2)):
@@ -316,13 +372,19 @@ class PageNumberExtractor:
 
             for comb in key_combs:
                 if set(comb[0]).intersection(set(comb[1])):
+                    if not(comb[0] in self.hits_dict[pair[0]] and comb[1] in self.hits_dict[pair[1]]):
+                        continue
                     val0 = self.hits_dict[pair[0]][comb[0]]
                     val1 = self.hits_dict[pair[1]][comb[1]]
-                    if val0 > val1:
-                        self.hits_dict[pair[1]].pop(comb[1], None)
-                    elif val1 > val0:
-                        self.hits_dict[pair[0]].pop(comb[0], None)
 
+                    if val0 > val1:
+                        val_ = self.hits_dict[pair[1]].pop(comb[1], None)
+                        diff = tuple(set(comb[1]).difference(set(comb[0])))
+                        self.hits_dict[pair[1]][diff] = val_
+                    elif val1 > val0:
+                        val_ = self.hits_dict[pair[0]].pop(comb[0], None)
+                        diff = tuple(set(comb[0]).difference(comb[1]))
+                        self.hits_dict[pair[0]][diff] = val_
 
     # save results
     def output_result(self):
