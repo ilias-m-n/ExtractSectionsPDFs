@@ -92,6 +92,11 @@ def remove_newline(text) -> str:
 def fix_split_words(text) -> str:
     return re.sub(r'(?<=\w)-\n\s{0,1}(?=\w)', "", text)
 
+def fix_cannot(text) -> str:
+    return re.sub(r'\bcannot\b', 'can not', text)
+
+def fix_lonely_dots(text) -> str:
+    return re.sub(r'\s+\.', '.', text)
 
 def clean_text(text) -> str:
     text = remove_special_characters(text)
@@ -107,4 +112,15 @@ def clean_text(text) -> str:
     text = remove_double_backslashes(text)
     text = remove_emails(text)
     text = remove_mult_underscore(text)
+    return text
+
+def clean_less(text) -> str:
+    text = remove_special_characters(text)
+    text = replace_consecutive_newlines(text)
+    text = remove_links(text)
+    text = remove_currency(text)
+    text = remove_lonely_symbols(text)
+    text = fix_lonely_dots(text)
+    text = remove_extra_points(text)
+    text = remove_extra_spaces(text)
     return text

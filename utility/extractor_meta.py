@@ -98,7 +98,7 @@ _auditor_2 = ["conducted our audits in accordance with",
 "an  ... audit involves performing",
 "an audit involves obtaining evidence about the amounts and disclosures in the financial statements",            
 """
-_auditor_21 = ["an  ... audit involves ",
+_auditor_21 = ["an ... audit involves ",
                "an ... audit includes",
                ]
 
@@ -183,37 +183,58 @@ _auditor_42 = ["our opinion ... fairly ... in all material",
 
 """
 _auditor_std = ["the consolidated financial statements referred to above present fairly, in all material respects ... in conformity with",
-                "in our opinion ... the financial report of ... in accordance with ...  a true and fair view ... complying with",
+                "in our opinion ... the financial report of ... in accordance with ... a true and fair view ... complying with",
                 "in our opinion ... the group financial statements give a true and fair view ... in accordance with",
-                "the group financial statements have been properly prepared in accordance with ",
+                "the group financial statements have been properly prepared in accordance with",
                 "in our opinion, based on our findings of our audit, the consolidated financial statements comply with",
-                "in our opinion, the consolidated financial statements present fairly, in all material respects ...  in accordance with",
+                "in our opinion, the consolidated financial statements present fairly, in all material respects ... in accordance with",
                 "in our opinion, the consolidated financial statements of ... in accordance with",
-                "in our opinion ... the financial statements give a true and fair view of ...  in accordance with",
+                "in our opinion ... the financial statements give a true and fair view of ... in accordance with",
                 "in our opinion, these Financial Statements present fairly, in all material respects, the consolidated and separate financial position of",
                 "in our opinion, the consolidated financial statements present fairly, in all material respects ... in accordance with",
-                "in our opinion, the financial statements of the Group ... in accordance with "
-                "in our opinion, the consolidated financial statements present fairly, in all material respects ... in accordance with ",
-
+                "in our opinion, the financial statements of the Group ... in accordance with"
+                "in our opinion, the consolidated financial statements present fairly, in all material respects ... in accordance with",
                 "in our opinion ... financial statements give the information required by ... and give a true and fair view in conformity with",
-                "in our opinion ... financial statements give a true and fair view of ...  in accordance with"]
+                "in our opinion ... financial statements give a true and fair view of ... in accordance with"]
+
+_auditor_std_simple = ["in conformity with",
+                       "in accordance with",
+                       "complying with",
+                       "comply with",
+                       ]
 
 """
+in our opinion ... the consolidated financial statements present fairly, in all material respects ... in accordance with
 
+"in our opinion ... the ... consolidated financial statements give the information required by ... give a true and fair view in conformity with",
+"in our opinion ... the consolidated financial statements ... present fairly ... material respects ... in accordance with",
+"in our opinion ... these ... financial Statements ... present fairly ... material respects ... in accordance with",
+"in our opinion ... the ... consolidated financial statements ... are properly drawn up in accordance with",
+"in our opinion ... the ... consolidated financial statements give the information required by ... give a true and fair view in accordance with",
+"in our opinion ... the consolidated financial statements ... present fairly ... material respects ... in conformity with",
+"in our opinion ... these ... financial Statements ... present fairly ... material respects ... in conformity with",
+"in our opinion ... the ... consolidated financial statements ... are properly drawn up in conformity with",
+"in our opinion ... the consolidated financial statements comply with"
 """
-_auditor_cons_std = ["in our opinion ... the ... consolidated financial statements give the information required by... give a true and fair view in conformity with",
-                     "in our opinion ... the consolidated financial statements present fairly ... in all material respects, the financial position of ... in accordance with",
-                     "in our opinion ... the consolidated financial statements present fairly ... material respects ... the consolidated financial position ... in accordance with",
-                     "in our opinion ... these ... financial Statements present fairly ... in all material respects ... in accordance with"
+_auditor_cons_std = ["in our opinion ... the ... consolidated financial statements ... in conformity with",
+                     "in our opinion ... the ... consolidated financial statements ... in accordance with",
+                     "in our opinion ... the ... consolidated financial statements ... comply with",
+                     "in our opinion ... these ... financial Statements ... in accordance with",
+                     "in our opinion ... these ... financial Statements ... in conformity with",
+                     "in our opinion ... these ... financial Statements ... comply with",
+                     "in my opinion ... the ... consolidated financial statements ... in conformity with",
+                     "in my opinion ... the ... consolidated financial statements ... in accordance with",
+                     "in my opinion ... the ... consolidated financial statements ... comply with",
+                     "in my opinion ... these ... financial Statements ... in accordance with",
+                     "in my opinion ... these ... financial Statements ... in conformity with",
+                     "in my opinion ... these ... financial Statements ... comply with",
                      ]
 
 """
-"in our opinion ... financial statements ... give a true and fair view ... in conformity with ",
-"in our opinion ... financial statements ... give a true and fair view ...  in accordance with",
 """
 _auditor_fin_std = ["in our opinion ... the --- financial statements ... in conformity with ",
                     "in our opinion ... the --- financial statements ... in accordance with",
-                    "in our opinion ... the --- financial statements present fairly, in all material respects ... in accordance with"
+                    "in our opinion ... the financial report ... in accordance with ... complying with"
                     ]
 
 
@@ -221,8 +242,8 @@ _auditor_fin_std = ["in our opinion ... the --- financial statements ... in conf
 
 
 
-_auditor_sections = (_auditor_1, _auditor_11, _auditor_12, _auditor_2, _auditor_21, _auditor_3, _auditor_4)
-_auditor_standards = (_auditor_4, )
+_auditor_sections = (_auditor_1, _auditor_11, _auditor_12, _auditor_2, _auditor_21, _auditor_3, _auditor_4, )
+_auditor_standards = (_auditor_cons_std, _auditor_fin_std, )
 
 # Notes Applied Standard Section
 """
@@ -295,10 +316,64 @@ _notes_1 = ["financial statements ... prepared ... with",
             "prepared ... in accordance with",
             ]
 
-_notes_std = ["prepared ... with",
+"""
+
+"""
+_notes_std_simple = ["prepared ... with",
               "according to",
               "in accordance with",
               ]
 
-_notes_sections = (_notes_head, _notes_head2, _notes_1)
-_notes_standards = (_notes_1, )
+"""
+these financial statements have been prepared to comply with
+the financial statements have been prepared in accordance with ??? last year ???
+the financial  statements  are  prepared  under  the  historical  cost  convention  in  accordance  with
+the financial statements of the Group and of the Company have been prepared in accordance with
+The financial statements have been drawn up in accordance with
+The consolidated Financial Statements and the separate Financial Statements have been prepared in compliance with
+The accounts are prepared on a going concern basis (see page 300 of the Report of the directors) and in accordance with
+The consolidated financial statements of the Group and the balance sheet and statement of changes in equity of the Company have been prepared in accordance with
+The consolidated financial statements have been prepared in compliance with
+The consolidated financial statements of Deutsche Telekom have been prepared in accordance with
+The financial statements have been prepared in accordance with
+The financial report is a general purpose financial report which has been prepared in accordance with
+The consolidated financial statements of the Company have been prepared in accordance with
+These consolidated financial statements are prepared in accordance with
+The separate financial statements have been prepared in compliance with
+The consolidated financial statements have been prepared in compliance with
+
+the consolidated financial statements and disclosures have been prepared in accordance with ??? standard mentioned in next sentence 
+The accompanying consolidated financial statements are prepared in accordance with Communiqué Serial II, No:14.1, “Principles of Financial Reporting
+in Capital Markets” (“the Communiqué”) published in the Official Gazette numbered 28676 on 13 June 2013. According to Article 5 of the Communiqué,
+consolidated financial statements are prepared in accordance with the Turkish Accounting Standards issued by Public Oversight Accounting and
+Auditing Standards Authority (“POAASA”).
+
+
+The accompanying consolidated financial statements are prepared in accordance with Communiqué Serial II, No:14.1, “Principles of Financial Reporting
+in Capital Markets” (“the Communiqué”) published in the Official Gazette numbered 28676 on 13 June 2013. According to Article 5 of the Communiqué,
+consolidated financial statements are prepared in accordance with the Turkish Accounting Standards issued by Public Oversight Accounting and
+Auditing Standards Authority (“POAASA”).
+
+"""
+_notes_std = ["these ... financial statements ... prepared ... comply with",
+              "these ... financial statements ... prepared ... in accordance with",
+              "these ... financial statements ... prepared ... in compliance with",
+              "these ... financial statements ... presented ... in accordance with"
+              "the ... financial statements ... prepared ... in accordance with",
+              "the ... financial statements ... presented ... in accordance with",
+              "the ... financial statements ... presented ... in compliance with",
+              "the ... financial statements ... prepared ... in compliance with",
+              "the ... financial statements ... prepared ... comply with",
+              "the ... financial statements ... drawn up ... in accordance with",
+              "the ... financial statements ... drawn up ... in compliance with",
+              "the ... financial statements ... drawn up ... comply with",
+              "the accounts ... prepared ... in accordance with",
+              "the ... financial report ... prepared ... in accordance with",
+              "the ... prepares its financial statements in accordance with",
+              "the ... prepares its financial statements in compliance with", # captures a lot more ... ask Sara _ 22430199
+              #"financial statements ... prepared ... in accordance with"
+]
+
+
+_notes_sections = (_notes_head, _notes_head2, _notes_1, )
+_notes_standards = (_notes_std, )

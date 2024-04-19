@@ -11,6 +11,7 @@ from pprint import pprint
 
 import fitz
 import pytesseract
+
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 from PIL import Image
 
@@ -20,6 +21,199 @@ from . import text_cleaning as tc
 from . import utility as util
 
 import traceback
+
+
+class TermExtractor:
+    def __init__(self,
+                 doc_id,
+                 path,
+                 section,
+                 page_nums,
+                 anchors,
+                 anchor_add_word_window,
+                 allowance_wildcards_reg_matches,
+                 flag_capture_surrounding_sentences,
+                 surrounding_sentences_margin,
+                 flag_do_ocr=False):
+
+        self.doc_id = doc_id
+        self.path = path
+
+        self.section = section
+        self.page_nums = page_nums
+
+        self.anchors = anchors
+        self.anchor_add_word_window = anchor_add_word_window
+        self.allowance_wildcards_reg_matches = allowance_wildcards_reg_matches
+
+        self.flag_capture_surrounding_sentences = flag_capture_surrounding_sentences
+        self.surrounding_sentences_margin = surrounding_sentences_margin
+
+        self.flag_do_ocr = flag_do_ocr
+
+        self.pdf = None
+        self.text = dict()
+        self.max_index_text = None
+        self.text_lemma = None
+
+        self.anchor_hits = []
+        self.sentence_group_intervals = []
+
+        self.lemma_sent_anchor_intervals = {}
+        self.word_index_anchor_intervals = {}
+
+        self.sentences = {}
+        self.intervals = {}
+        self.terms = {}
+
+    def run(self):
+        self.parse_pdf()
+        self.find_anchor_hits()
+        self.process_anchor_hits()
+        return self.return_results()
+
+    # Read and clean PDF
+    def parse_pdf(self):
+        self.read_pdf()
+        self.parse_pages()
+        self.preprocess_text()
+
+    def read_pdf(self):
+        self.pdf = fitz.open(self.path)
+
+    def parse_pages(self):
+        for index, page in enumerate(self.pdf):
+            if index in self.page_nums:
+                text = page.get_text()
+                self.text[index] = text
+                if (text == "") and self.flag_do_ocr:
+                    pix = page.get_pixmap()
+                    img_bytes = pix.tobytes('png')
+                    img = Image.open(io.BytesIO(img_bytes))
+                    # img = util.preprocess_image_for_ocr(img)
+                    text = pytesseract.image_to_string(img, config="--oem 1 --psm 4")
+                    self.text[index] = util.correct_text(text)
+
+    def preprocess_text(self):
+        for page_num in self.text:
+            # structure paragraphs
+            self.text[page_num] = tc.remove_space_betw_newlines(''.join(self.text[page_num])).split('\n\n')
+            # fix split words
+            self.text[page_num] = [tc.fix_split_words(para) for para in self.text[page_num]]
+            # remove newline
+            self.text[page_num] = [tc.remove_newline(para) for para in self.text[page_num]]
+            # remove extra spaces
+            self.text[page_num] = [tc.remove_extra_spaces(para) for para in self.text[page_num]]
+            # split cannot into can not
+            self.text[page_num] = [tc.fix_cannot(para) for para in self.text[page_num]]
+
+            # self.text[page_num] = [util.full_process_text(para) for para in self.text[page_num]]
+            self.text[page_num] = " ".join(self.text[page_num])
+
+            # clean text
+            self.text[page_num] = util.full_clean_text_keep_sent_struc(self.text[page_num])
+            self.text[page_num] = [tc.clean_less(sent) for sent in self.text[page_num]]
+
+        self.text = [sent for page in self.text for sent in self.text[page]]
+        self.text = {index: sent for index, sent in enumerate(self.text)}
+        self.max_index_text = max(self.text.keys())
+
+    def find_anchor_hits(self):
+        self.text_lemma = {key: util.full_process_text(sent) for key, sent in self.text.items()}
+
+        for key, sent in self.text_lemma.items():
+            for anchor in self.anchors:
+                for sub_anchor in anchor:
+                    wild_c = str(self.allowance_wildcards_reg_matches)
+                    sub_anchor_pattern = re.compile(util.prep_extract_anchors(sub_anchor, wild_c))
+
+                    match = re.search(sub_anchor_pattern, sent)
+                    if match is not None:
+                        self.anchor_hits.append(key)
+                        self.sentences[key] = self.text[key]
+                        continue
+                if match is not None:
+                    continue
+
+    def process_anchor_hits(self):
+        if self.flag_capture_surrounding_sentences:
+            self.create_anchor_hit_intervals()
+        self.extract_terms()
+
+    def create_anchor_hit_intervals(self):
+        intervals = []
+        margin = self.surrounding_sentences_margin
+        for index in self.anchor_hits:
+            intervals.append([max(0, index - margin), min(self.max_index_text, index + margin)])
+        self.sentence_group_intervals = util.merge_overlapping_intervals(intervals)
+        for interval in self.sentence_group_intervals:
+            sent_group = []
+            for index in range(interval[0], interval[1] + 1):
+                sent_group.append(self.text[index])
+            self.intervals[tuple(interval)] = sent_group
+
+    def extract_terms(self):
+        # find start and end indexes of anchor hits
+        for index in self.anchor_hits:
+            self.lemma_sent_anchor_intervals[index] = []
+            curr = self.text_lemma[index]
+            for anchor in self.anchors:
+                for sub_anchor in anchor:
+                    wild_c = str(self.allowance_wildcards_reg_matches)
+                    sub_anchor_pattern = re.compile(util.prep_extract_anchors(sub_anchor, wild_c))
+                    for match in re.finditer(sub_anchor_pattern, curr):
+                        self.lemma_sent_anchor_intervals[index].append((match.start(), match.end()))
+        print(self.lemma_sent_anchor_intervals)
+
+        # create word pos from lemma anchor indexes
+        lemma_char_pos_to_word_pos = {}
+        for index in self.anchor_hits:
+            lemma_char_pos_to_word_pos[index] = []
+            curr_word_index = 0
+            for i, c in enumerate(self.text_lemma[index]):
+                # if lemma_char_pos_to_word_pos[index] and (
+                #         lemma_char_pos_to_word_pos[index][-1] == -1 and (c == "." or c == ' ')):
+                #     lemma_char_pos_to_word_pos[index].append(-1)
+                #     continue
+                if c == " ":
+                    curr_word_index += 1
+                    lemma_char_pos_to_word_pos[index].append(-1)
+                    continue
+                lemma_char_pos_to_word_pos[index].append(curr_word_index)
+
+        anchor_word_pos_intervals = {}
+        for index in self.anchor_hits:
+            anchor_word_pos_intervals[index] = []
+            for interval in self.lemma_sent_anchor_intervals[index]:
+                start = lemma_char_pos_to_word_pos[index][interval[0]]
+                end = lemma_char_pos_to_word_pos[index][interval[1] - 1]
+                anchor_word_pos_intervals[index].append((start, end))
+
+        # translate word pos to char intervals in unlemmatized text
+        wordpos2charindex = {}
+        for index in self.anchor_hits:
+            curr_word_index = 0
+            wordpos2charindex[index] = {}
+            for i, c in enumerate(self.text[index]):
+                if c == " ":
+                    curr_word_index += 1
+                    continue
+                wordpos2charindex[index].setdefault(curr_word_index, []).append(i)
+
+        char_pos_intervals = {}
+        for index in self.anchor_hits:
+            char_pos_intervals[index] = []
+            self.terms[index] = []
+            for interval in anchor_word_pos_intervals[index]:
+                start = wordpos2charindex[index][interval[0]][0]
+                end = wordpos2charindex[index][interval[1]][-1] + 1
+                char_pos_intervals[index].append((start, end))
+                self.terms[index].append(self.text[index][end:])
+
+
+
+    def return_results(self):
+        return self.intervals, self.sentences, self.terms
 
 
 class PageTextExtractor:
@@ -32,7 +226,7 @@ class PageTextExtractor:
                  anchors,
                  anchor_add_word_window,
                  allowance_wildcards_reg_matches,
-                 flag_do_ocr = False):
+                 flag_do_ocr=False):
 
         self.doc_id = doc_id
         self.path = path
@@ -99,13 +293,15 @@ class PageTextExtractor:
             self.text[page_num] = [tc.remove_newline(para) for para in self.text[page_num]]
             # remove extra spaces
             self.text[page_num] = [tc.remove_extra_spaces(para) for para in self.text[page_num]]
+            # split cannot into can not
+            self.text[page_num] = [tc.fix_cannot(para) for para in self.text[page_num]]
 
             # self.text[page_num] = [util.full_process_text(para) for para in self.text[page_num]]
             self.text[page_num] = " ".join(self.text[page_num])
 
             # clean text
             self.text[page_num] = util.full_clean_text(self.text[page_num])
-            self.text[page_num] = tc.clean_text(self.text[page_num])
+            self.text[page_num] = tc.clean_less(self.text[page_num])
 
         self.text = " ".join(self.text.values())
 
@@ -118,12 +314,15 @@ class PageTextExtractor:
         self.fix_lemma_indeces_to_unprocessed_text()
 
     def find_anchor_intervals(self):
+        self.text_lemma = util.full_process_text_keep_sentence_dots(self.text)
+        # print(self.text_lemma)
         for anchor in self.anchors:
-            self.text_lemma = util.full_process_text(self.text)
+
             for sub_anchor in anchor:
                 wild_c = str(self.allowance_wildcards_reg_matches)
-                sub_anchor_pattern = re.compile(sub_anchor.replace('...', '.{,' + wild_c + '}?'))
+                sub_anchor_pattern = re.compile(util.prep_extract_anchors(sub_anchor, wild_c))
                 for match in re.finditer(sub_anchor_pattern, self.text_lemma):
+                    # print(sub_anchor)
                     self.lemma_anchor_intervals.append((match.start(), match.end()))
         self.lemma_anchor_intervals = self.merge_overlaying_indeces(self.lemma_anchor_intervals)
 
@@ -147,6 +346,9 @@ class PageTextExtractor:
         curr_word_index = 0
         lemma_char_pos_to_word_pos = []
         for i, c in enumerate(self.text_lemma):
+            if lemma_char_pos_to_word_pos and (lemma_char_pos_to_word_pos[-1] == -1 and (c == "." or c == ' ')):
+                lemma_char_pos_to_word_pos.append(-1)
+                continue
             if c == " ":
                 curr_word_index += 1
                 lemma_char_pos_to_word_pos.append(-1)
@@ -162,16 +364,21 @@ class PageTextExtractor:
             anchor_intervals_word_pos.append((start, end))
             anchor_term_intervals_word_pos.append((start_term, end_term))
         anchor_intervals_word_pos = self.merge_overlaying_indeces(anchor_intervals_word_pos)
-        # nnn = len(self.text.split())
-        # lll = len(self.text_lemma.split())
-        # if nnn != lll:
+        # testing
+        nnn = len(self.text.split())
+        lll = len(self.text_lemma.split())
+        # if nnn + self.text_lemma.count(' . ') != lll:
+        #     print(self.doc_id)
         #     print(anchor_intervals_word_pos)
         #     print(f"text number of words: {nnn}")
         #     print(f"number of words in lemma: {lll}")
+        #     print(self.text_lemma.count(' . '))
         #     print()
-        #     # print(self.text)
+        #     print(self.text)
         #     print()
-        #     # print(self.text_lemma)
+        #     print(self.text_lemma)
+        #     for a, b in zip(self.text.split(), self.text_lemma.split()):
+        #         print(a, b)
         self.anchor_intervals_word_pos = anchor_intervals_word_pos
         self.anchor_term_intervals_word_pos = anchor_term_intervals_word_pos
 
@@ -187,14 +394,14 @@ class PageTextExtractor:
             wordpos2charind.setdefault(curr_word_index, []).append(i)
         for a_int in self.anchor_intervals_word_pos:
             start_char_index = wordpos2charind[a_int[0]][0]
-
             end_char_index = wordpos2charind[min(a_int[1], max(wordpos2charind.keys()))][-1]
             self.anchor_index_intervals.append([start_char_index, end_char_index])
             self.reduced_text.append(self.text[start_char_index:end_char_index + 1])
+
         for a_int in self.anchor_term_intervals_word_pos:
             start_char_index = wordpos2charind[a_int[0]][0]
-
             end_char_index = wordpos2charind[min(a_int[1], max(wordpos2charind.keys()))][-1]
+
             self.anchor_index_term_intervals.append([start_char_index, end_char_index])
             self.terms.append(self.text[start_char_index:end_char_index + 1])
 
@@ -219,10 +426,10 @@ class PageNumberExtractor:
                  flag_only_max_hits=False,
                  flag_allow_overlapping_sections=False,
                  flag_adjust_real_page_num=False,
-                 flag_do_ocr = False,
-                 flag_allow_duplicate_hits_in_groups = False,
-                 sections_with_page_skip_groups = None,
-                 thresh_ocr = 100):
+                 flag_do_ocr=False,
+                 flag_allow_duplicate_hits_in_groups=False,
+                 sections_with_page_skip_groups=None,
+                 thresh_ocr=100):
 
         self.doc_id = doc_id
         self.path = path
@@ -231,7 +438,6 @@ class PageNumberExtractor:
         self.text = dict()
         self.doc_num_pages = 0
 
-        ########## Mode 0: extract page numbers
         self.section_anchors = section_anchors
         self.num_anchors_per_section = {key: len(anchors) for key, anchors in self.section_anchors.items()}
 
@@ -254,8 +460,6 @@ class PageNumberExtractor:
         self.thresh_ocr = thresh_ocr
 
         self.hits_dict = dict()
-
-        ########## Mode 1: extract text of pages
 
     def run(self):
         self.parse_pdf()
@@ -293,7 +497,6 @@ class PageNumberExtractor:
                 text = pytesseract.image_to_string(img, config="--oem 1 --psm 4")
                 self.text[index] = util.correct_text(text)
 
-
     def preprocess_text(self):
         for page_num in self.text:
             # structure paragraphs
@@ -324,7 +527,8 @@ class PageNumberExtractor:
         hit_ids = []
         for sub_anchor in anchors:
             flag_hit = False
-            sub_anchor_patterns = [re.compile(ele.replace('...', '.*?')) for ele in sub_anchor]
+            # sub_anchor_patterns = [re.compile(ele.replace('...', '.*?')) for ele in sub_anchor]
+            sub_anchor_patterns = [re.compile(util.prep_extract_anchors(ele, '400')) for ele in sub_anchor]
             for pattern in sub_anchor_patterns:
                 for line in page:
                     if re.search(pattern, line):
@@ -345,7 +549,6 @@ class PageNumberExtractor:
         # self.fix_overlaying_section_ll()
         # self.combine_page_groups()
 
-
     def combine_page_groups(self):
         for section in self.hits_ll:
             self.hits_ll[section].combine_groups(self.flag_allow_duplicate_hits_in_groups)
@@ -353,7 +556,6 @@ class PageNumberExtractor:
                 self.hits_ll[section].combine_skip_groups(self.flag_allow_duplicate_hits_in_groups)
             self.hits_ll[section].remove_below_min_hits(self.min_anchor_hits[section], self.flag_only_max_hits)
             self.hits_dict[section] = self.hits_ll[section].to_dict()
-
 
     def fix_overlaying_section_ll(self):
         eles = []
@@ -363,7 +565,6 @@ class PageNumberExtractor:
             for second in range(first + 1, len(eles)):
                 eles[first].fix_overlaying_sections(eles[second])
 
-
     def fix_overlaying_section(self):
         for pair in list(combinations(list(self.hits_dict.keys()), 2)):
             sections = pair
@@ -372,7 +573,7 @@ class PageNumberExtractor:
 
             for comb in key_combs:
                 if set(comb[0]).intersection(set(comb[1])):
-                    if not(comb[0] in self.hits_dict[pair[0]] and comb[1] in self.hits_dict[pair[1]]):
+                    if not (comb[0] in self.hits_dict[pair[0]] and comb[1] in self.hits_dict[pair[1]]):
                         continue
                     val0 = self.hits_dict[pair[0]][comb[0]]
                     val1 = self.hits_dict[pair[1]][comb[1]]

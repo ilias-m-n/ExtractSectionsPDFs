@@ -63,7 +63,7 @@ def preprocess_image_for_ocr(img):
 def full_process_text(text):
     text = text.lower()
 
-    punctuation_except_dots = string.punctuation.replace('.', '') + '’‘“”'
+    punctuation_except_dots = string.punctuation.replace('.', '') + '’‘“”„'
     text = text.translate(str.maketrans('', '', punctuation_except_dots))
 
     # tokenization
@@ -80,6 +80,26 @@ def full_process_text(text):
     text = " ".join(lemma_tokens)
     return text
 
+def full_process_text_keep_sentence_dots(text):
+    text = text.lower()
+
+    punctuation_except_dots = string.punctuation.replace('.', '') + '’‘“”„'
+    text = text.translate(str.maketrans('', '', punctuation_except_dots))
+
+    # tokenization
+    tokens = nltk.word_tokenize(text)
+
+    # stemming
+    stemmer = PorterStemmer()
+    stemmed_tokens = [stemmer.stem(token) if token != '.' else token for token in tokens]
+
+    # lemmatization
+    lemmatizer = WordNetLemmatizer()
+    lemma_tokens = [lemmatizer.lemmatize(token) if token != '.' else token for token in stemmed_tokens]
+
+    text = " ".join(lemma_tokens)
+    return text
+
 # Prep Anchors
 def process_section_anchors(section_anchors):
     processed_section_anchors = {}
@@ -91,12 +111,55 @@ def process_section_anchors(section_anchors):
     return processed_section_anchors
 
 def full_clean_text(text):
-    punctuation_except_dots = string.punctuation.replace('.', '').replace("'", '') + "’‘“”"
+    punctuation_except_dots = string.punctuation.replace('.', '').replace("'", '') + "’‘“”„"
     text = text.translate(str.maketrans('', '', punctuation_except_dots))
     return text
+
+def full_clean_text_keep_sent_struc(text):
+    punctuation_except_dots = string.punctuation.replace('.', '') + '’‘“”„'
+    text = text.translate(str.maketrans('', '', punctuation_except_dots))
+
+    # tokenization
+    tokens = nltk.word_tokenize(text)
+
+    sentences = []
+
+    curr = []
+    for token in tokens:
+        curr.append(token)
+        if token == '.':
+            sentences.append(' '.join(curr))
+            curr = []
+
+    return sentences
+
+
+
 
 
 # Estimate number of tokens
 def count_tokens(text: str, encoding: str = "cl100k_base") -> int:
     encoding = get_encoding(encoding)
     return len(encoding.encode(text))
+
+# prepare anchors for text extraction
+def prep_extract_anchors(anchor, wild_c):
+    anchor = anchor.replace(' ... ', '(?:(?!\s\.\s).){,' + wild_c + '}?')
+    anchor = anchor.replace(' --- ', '(?!\sconsolidated\s\b)\b\w*')
+    return anchor
+
+
+def merge_overlapping_intervals(intervals):
+    sorted_intervals = sorted(intervals, key=lambda x: x[0])
+    merged = []
+
+    for interval in sorted_intervals:
+        # If the list of merged intervals is empty or if the current
+        # interval does not overlap with the previous, simply append it.
+        if not merged or merged[-1][1] < interval[0]:
+            merged.append(interval)
+        else:
+            # Otherwise, there is an overlap, so merge the current and previous intervals
+            merged[-1] = (merged[-1][0], max(merged[-1][1], interval[1]))
+
+    return merged
