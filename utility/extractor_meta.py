@@ -22,6 +22,7 @@ _auditor_1 = ["have audited the",
               "has audited the"
               ]
 
+
 """
 "management is responsible for the preparation and fair presentation ... in accordance with",
 "management is responsible for the preparation of financial statements that give a true and fair view in accordance with",
@@ -45,6 +46,7 @@ _auditor_11 = ["management ... is responsible for the preparation and fair prese
                "are the responsibility of"
                ]
 
+
 """
 "our responsibility is to express an opinion ... based on our audit",
 "our responsibility is to express an opinion ... based on our audits",
@@ -60,6 +62,7 @@ _auditor_12 = ["responsibility is to express an opinion",
                "our responsibilities",
                'my responsibilities'
                ]
+
 
 """
 "we conducted our audit in accordance with",
@@ -84,6 +87,7 @@ _auditor_2 = ["conducted our audits in accordance with",
               "audit was conducted",
               ]
 
+
 """
 "an audit involves performing procedures to obtain audit evidence about the amounts and disclosures in the financial statments",
 "an audit involves performing procedures to obtain audit evidence about the amounts and the disclosures",
@@ -101,6 +105,7 @@ _auditor_2 = ["conducted our audits in accordance with",
 _auditor_21 = ["an ... audit involves ",
                "an ... audit includes",
                ]
+
 
 """
 "we believe that the audit evidence we have obtained is sufficient and appropriate to provide a basis for our audit opinion",
@@ -124,6 +129,7 @@ _auditor_3 = [
     "I believe that my audits provide a reasonable basis for my opinion",
     "believes that the audit evidence ... has obtained is sufficient and appropriate to provide a basis"
     ]
+
 
 """
 "in our opinion ... present fairly ... in all material respects ... in accordance with",
@@ -151,8 +157,8 @@ _auditor_3 = [
 
 "in our opinion ... fairly ... in all material respects"
 "in our opinion ... fairly ... in all material respects"
-"""
-_auditor_4 = ["in our opinion ... fairly ... in all material",
+
+"in our opinion ... fairly ... in all material",
               "in our opinion ... comply with",
               "in our opinion ... true and fair view",
               "in our opinion ... in accordance with",
@@ -163,8 +169,7 @@ _auditor_4 = ["in our opinion ... fairly ... in all material",
               "in my opinion ... true and fair view",
               "in my opinion ... in accordance with",
               "in my opinion ... in conformity with",
-              "in the ... opinion ... in all material respects"]
-
+              
 _auditor_42 = ["our opinion ... fairly ... in all material",
               "our opinion ... comply with",
               "our opinion ... true and fair view",
@@ -176,10 +181,25 @@ _auditor_42 = ["our opinion ... fairly ... in all material",
               "my opinion ... true and fair view",
               "my opinion ... in accordance with",
               "my opinion ... in conformity with",
-              "in the ... opinion ... in all material respects"]
-
-
+              "in the ... opinion ... in all material respects",
+               
+               ]
 """
+_auditor_4 = [
+              "in the ... opinion ... in all material respects",
+              "in our opinion ... the ... financial statements ... in conformity with",
+              "in our opinion ... the ... financial statements ... in accordance with",
+              "in our opinion ... the ... financial statements ... comply with",
+              "in our opinion ... these ... financial Statements ... in accordance with",
+              "in our opinion ... these ... financial Statements ... in conformity with",
+              "in our opinion ... these ... financial Statements ... comply with",
+              "in my opinion ... the ... financial statements ... in conformity with",
+              "in my opinion ... the ... financial statements ... in accordance with",
+              "in my opinion ... the ... financial statements ... comply with",
+              "in my opinion ... these ... financial Statements ... in accordance with",
+              "in my opinion ... these ... financial Statements ... in conformity with",
+              "in my opinion ... these ... financial Statements ... comply with",
+              ]
 
 """
 _auditor_std = ["the consolidated financial statements referred to above present fairly, in all material respects ... in conformity with",
@@ -203,7 +223,6 @@ _auditor_std_simple = ["in conformity with",
                        "comply with",
                        ]
 
-"""
 in our opinion ... the consolidated financial statements present fairly, in all material respects ... in accordance with
 
 "in our opinion ... the ... consolidated financial statements give the information required by ... give a true and fair view in conformity with",
@@ -215,16 +234,29 @@ in our opinion ... the consolidated financial statements present fairly, in all 
 "in our opinion ... these ... financial Statements ... present fairly ... material respects ... in conformity with",
 "in our opinion ... the ... consolidated financial statements ... are properly drawn up in conformity with",
 "in our opinion ... the consolidated financial statements comply with"
+
+"in our opinion ... the ... consolidated financial statements ... in conformity with",
+"in our opinion ... the ... consolidated financial statements ... in accordance with",
+"in our opinion ... the ... consolidated financial statements ... comply with",
+"in our opinion ... these ... financial Statements ... in accordance with",
+ "in our opinion ... these ... financial Statements ... in conformity with",
+ "in our opinion ... these ... financial Statements ... comply with",
+ "in my opinion ... the ... consolidated financial statements ... in conformity with",
+ "in my opinion ... the ... consolidated financial statements ... in accordance with",
+ "in my opinion ... the ... consolidated financial statements ... comply with",
+ "in my opinion ... these ... financial Statements ... in accordance with",
+ "in my opinion ... these ... financial Statements ... in conformity with",
+ "in my opinion ... these ... financial Statements ... comply with",
 """
-_auditor_cons_std = ["in our opinion ... the ... consolidated financial statements ... in conformity with",
-                     "in our opinion ... the ... consolidated financial statements ... in accordance with",
-                     "in our opinion ... the ... consolidated financial statements ... comply with",
+_auditor_cons_std = ["in our opinion ... the ... financial statements ... in conformity with",
+                     "in our opinion ... the ... financial statements ... in accordance with",
+                     "in our opinion ... the ... financial statements ... comply with",
                      "in our opinion ... these ... financial Statements ... in accordance with",
                      "in our opinion ... these ... financial Statements ... in conformity with",
                      "in our opinion ... these ... financial Statements ... comply with",
-                     "in my opinion ... the ... consolidated financial statements ... in conformity with",
-                     "in my opinion ... the ... consolidated financial statements ... in accordance with",
-                     "in my opinion ... the ... consolidated financial statements ... comply with",
+                     "in my opinion ... the ... financial statements ... in conformity with",
+                     "in my opinion ... the ... financial statements ... in accordance with",
+                     "in my opinion ... the ... financial statements ... comply with",
                      "in my opinion ... these ... financial Statements ... in accordance with",
                      "in my opinion ... these ... financial Statements ... in conformity with",
                      "in my opinion ... these ... financial Statements ... comply with",
@@ -238,12 +270,9 @@ _auditor_fin_std = ["in our opinion ... the --- financial statements ... in conf
                     ]
 
 
-
-
-
-
 _auditor_sections = (_auditor_1, _auditor_11, _auditor_12, _auditor_2, _auditor_21, _auditor_3, _auditor_4, )
 _auditor_standards = (_auditor_cons_std, _auditor_fin_std, )
+
 
 # Notes Applied Standard Section
 """
@@ -316,7 +345,7 @@ _notes_1 = ["financial statements ... prepared ... with",
             "prepared ... in accordance with",
             ]
 
-"""
+
 
 """
 _notes_std_simple = ["prepared ... with",
@@ -324,7 +353,6 @@ _notes_std_simple = ["prepared ... with",
               "in accordance with",
               ]
 
-"""
 these financial statements have been prepared to comply with
 the financial statements have been prepared in accordance with ??? last year ???
 the financial  statements  are  prepared  under  the  historical  cost  convention  in  accordance  with
@@ -358,7 +386,7 @@ Auditing Standards Authority (“POAASA”).
 _notes_std = ["these ... financial statements ... prepared ... comply with",
               "these ... financial statements ... prepared ... in accordance with",
               "these ... financial statements ... prepared ... in compliance with",
-              "these ... financial statements ... presented ... in accordance with"
+              "these ... financial statements ... presented ... in accordance with",
               "the ... financial statements ... prepared ... in accordance with",
               "the ... financial statements ... presented ... in accordance with",
               "the ... financial statements ... presented ... in compliance with",
@@ -370,8 +398,7 @@ _notes_std = ["these ... financial statements ... prepared ... comply with",
               "the accounts ... prepared ... in accordance with",
               "the ... financial report ... prepared ... in accordance with",
               "the ... prepares its financial statements in accordance with",
-              "the ... prepares its financial statements in compliance with", # captures a lot more ... ask Sara _ 22430199
-              #"financial statements ... prepared ... in accordance with"
+              "the ... prepares its financial statements in compliance with",
 ]
 
 

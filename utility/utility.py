@@ -163,3 +163,15 @@ def merge_overlapping_intervals(intervals):
             merged[-1] = (merged[-1][0], max(merged[-1][1], interval[1]))
 
     return merged
+
+def get_num_workers(prompt, lower_bound, upper_bound):
+    while True:
+        try:
+            user_input = input(prompt)
+            number = int(user_input)
+            if lower_bound <= number <= upper_bound:
+                return number
+            else:
+                print(f"Please enter a number within the bounds ({lower_bound}, {upper_bound}).")
+        except ValueError:
+            print("The input is not a valid integer. Please try again.")

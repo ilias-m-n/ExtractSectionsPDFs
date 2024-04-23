@@ -1,26 +1,14 @@
 import io
 import math
-import os
 import re
-import sys
-import time
-from collections import Counter
-from datetime import datetime
 from itertools import product, combinations
-from pprint import pprint
-
 import fitz
 import pytesseract
-
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 from PIL import Image
-
 from . import LinkedListAnchorHitInfo as ll
-from . import extractor_meta as em
 from . import text_cleaning as tc
 from . import utility as util
-
-import traceback
 
 
 class TermExtractor:
@@ -163,7 +151,6 @@ class TermExtractor:
                     sub_anchor_pattern = re.compile(util.prep_extract_anchors(sub_anchor, wild_c))
                     for match in re.finditer(sub_anchor_pattern, curr):
                         self.lemma_sent_anchor_intervals[index].append((match.start(), match.end()))
-        print(self.lemma_sent_anchor_intervals)
 
         # create word pos from lemma anchor indexes
         lemma_char_pos_to_word_pos = {}
@@ -589,7 +576,190 @@ class PageNumberExtractor:
 
     # save results
     def output_result(self):
-        result = {'doc_id': self.doc_id, 'doc_num_pages': self.doc_num_pages}
+        result = {'doc_id': self.doc_id, 'doc_path': self.path, 'doc_num_pages': self.doc_num_pages}
+        for section in self.hits_dict:
+            page_numbers = [number for tup in self.hits_dict[section].keys() for number in tup]
+            result[section] = page_numbers
+        return result
+
+
+class PageNumberExtractor_SentenceBase:
+
+    def __init__(self,
+                 doc_id,
+                 path,
+                 section_anchors,
+                 min_anchor_hit_ratio=0,
+                 flag_only_max_hits=False,
+                 flag_allow_overlapping_sections=False,
+                 flag_adjust_real_page_num=False,
+                 flag_do_ocr=False,
+                 flag_allow_duplicate_hits_in_groups=False,
+                 sections_with_page_skip_groups=None,
+                 thresh_ocr=100):
+
+        self.doc_id = doc_id
+        self.path = path
+
+        self.pdf = None
+        self.text = dict()
+        self.doc_num_pages = 0
+
+        self.section_anchors = section_anchors
+        self.num_anchors_per_section = {key: len(anchors) for key, anchors in self.section_anchors.items()}
+
+        self.hits_ll = dict()
+        self.hits_ll_red = dict()
+        self.section_anchor_ids = {}
+        self.attach_anchor_id()
+
+        self.min_anchor_hit_ratio = min_anchor_hit_ratio
+        self.min_anchor_hits = {key: math.ceil(num * self.min_anchor_hit_ratio) \
+                                for key, num in self.num_anchors_per_section.items()}
+
+        self.flag_only_max_hits = flag_only_max_hits
+        self.flag_allow_overlapping_sections = flag_allow_overlapping_sections
+        self.flag_adjust_real_page_num = flag_adjust_real_page_num
+        self.page_num_fixer = 1 if self.flag_adjust_real_page_num else 0
+        self.flag_do_ocr = flag_do_ocr
+        self.flag_allow_duplicate_hits_in_groups = flag_allow_duplicate_hits_in_groups
+        self.sections_with_page_skip_groups = sections_with_page_skip_groups if sections_with_page_skip_groups else []
+        self.thresh_ocr = thresh_ocr
+
+        self.hits_dict = dict()
+
+    def run(self):
+        self.parse_pdf()
+        self.find_section_hits()
+        self.process_results()
+        return self.output_result()
+
+    def attach_anchor_id(self):
+        for section, anchors in self.section_anchors.items():
+            anchor_id = 0
+            self.section_anchor_ids[section] = {}
+            for anchor in anchors:
+                self.section_anchor_ids[section][anchor] = anchor_id
+                anchor_id += 1
+
+    # Read and clean PDF
+    def parse_pdf(self):
+        self.read_pdf()
+        self.parse_pages()
+        self.preprocess_text()
+
+    def read_pdf(self):
+        self.pdf = fitz.open(self.path)
+
+    def parse_pages(self):
+        self.doc_num_pages = len(self.pdf)
+        for index, page in enumerate(self.pdf):
+            text = page.get_text()
+            self.text[index] = text
+            if ((text == "") and self.flag_do_ocr) or len(text) < self.thresh_ocr:
+                pix = page.get_pixmap()
+                img_bytes = pix.tobytes('png')
+                img = Image.open(io.BytesIO(img_bytes))
+                # img = util.preprocess_image_for_ocr(img)
+                text = pytesseract.image_to_string(img, config="--oem 1 --psm 4")
+                self.text[index] = util.correct_text(text)
+
+    def preprocess_text(self):
+        for page_num in self.text:
+            # structure paragraphs
+            self.text[page_num] = tc.remove_space_betw_newlines(''.join(self.text[page_num])).split('\n\n')
+            # fix split words
+            self.text[page_num] = [tc.fix_split_words(para) for para in self.text[page_num]]
+            # remove newline
+            self.text[page_num] = [tc.remove_newline(para) for para in self.text[page_num]]
+            # remove extra spaces
+            self.text[page_num] = [tc.remove_extra_spaces(para) for para in self.text[page_num]]
+            # concat at newlines
+            self.text[page_num] = [util.full_process_text(para) for para in self.text[page_num]]
+
+            
+
+
+    # find section hits
+    def find_section_hits(self):
+        for section, anchors in self.section_anchors.items():
+            self.hits_ll[section] = ll.LinkedListAnchorHitInfo()
+            # print(section)
+            for page_num in self.text:
+                hits, hit_ids = self.find_anchor_hits(section, self.text[page_num], anchors)
+                # print(page_num, hit_ids)
+                # if(page_num in [15, 16]):
+                #     print(self.text[page_num])
+                self.hits_ll[section].append(page_num + self.page_num_fixer, hits, hit_ids)
+
+    def find_anchor_hits(self, section, page, anchors):
+        hits = 0
+        hit_ids = []
+        for sub_anchor in anchors:
+            flag_hit = False
+            # sub_anchor_patterns = [re.compile(ele.replace('...', '.*?')) for ele in sub_anchor]
+            sub_anchor_patterns = [re.compile(util.prep_extract_anchors(ele, '400')) for ele in sub_anchor]
+            for pattern in sub_anchor_patterns:
+                for line in page:
+                    if re.search(pattern, line):
+                        hits += 1
+                        flag_hit = True
+                        hit_ids.append(self.section_anchor_ids[section][sub_anchor])
+                        # print(pattern)
+                        break
+                if flag_hit == True:
+                    break
+        return hits, set(hit_ids)
+
+    # process hits
+    def process_results(self):
+        self.combine_page_groups()
+        if not self.flag_allow_overlapping_sections:
+            self.fix_overlaying_section()
+        # self.fix_overlaying_section_ll()
+        # self.combine_page_groups()
+
+    def combine_page_groups(self):
+        for section in self.hits_ll:
+            self.hits_ll[section].combine_groups(self.flag_allow_duplicate_hits_in_groups)
+            if section in self.sections_with_page_skip_groups:
+                self.hits_ll[section].combine_skip_groups(self.flag_allow_duplicate_hits_in_groups)
+            self.hits_ll[section].remove_below_min_hits(self.min_anchor_hits[section], self.flag_only_max_hits)
+            self.hits_dict[section] = self.hits_ll[section].to_dict()
+
+    def fix_overlaying_section_ll(self):
+        eles = []
+        for section in self.hits_ll:
+            eles.append(self.hits_ll[section])
+        for first in range(len(eles)):
+            for second in range(first + 1, len(eles)):
+                eles[first].fix_overlaying_sections(eles[second])
+
+    def fix_overlaying_section(self):
+        for pair in list(combinations(list(self.hits_dict.keys()), 2)):
+            sections = pair
+            keys = [list(self.hits_dict[section].keys()) for section in sections]
+            key_combs = list(product(*keys))
+
+            for comb in key_combs:
+                if set(comb[0]).intersection(set(comb[1])):
+                    if not (comb[0] in self.hits_dict[pair[0]] and comb[1] in self.hits_dict[pair[1]]):
+                        continue
+                    val0 = self.hits_dict[pair[0]][comb[0]]
+                    val1 = self.hits_dict[pair[1]][comb[1]]
+
+                    if val0 > val1:
+                        val_ = self.hits_dict[pair[1]].pop(comb[1], None)
+                        diff = tuple(set(comb[1]).difference(set(comb[0])))
+                        self.hits_dict[pair[1]][diff] = val_
+                    elif val1 > val0:
+                        val_ = self.hits_dict[pair[0]].pop(comb[0], None)
+                        diff = tuple(set(comb[0]).difference(comb[1]))
+                        self.hits_dict[pair[0]][diff] = val_
+
+    # save results
+    def output_result(self):
+        result = {'doc_id': self.doc_id, 'doc_path': self.path, 'doc_num_pages': self.doc_num_pages}
         for section in self.hits_dict:
             page_numbers = [number for tup in self.hits_dict[section].keys() for number in tup]
             result[section] = page_numbers
