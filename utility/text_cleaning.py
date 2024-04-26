@@ -98,6 +98,45 @@ def fix_cannot(text) -> str:
 def fix_lonely_dots(text) -> str:
     return re.sub(r'\s+\.', '.', text)
 
+def remove_lonely_letterDot(text) -> str:
+    return re.sub(r'\b(?:([A-ZŞﬁ])\.)*[A-ZŞﬁ]\.', lambda m: m.group(0).replace('.', ''), text)
+
+def remove_double_letterDot(text) -> str:
+    return re.sub(r'\b[A-ZŞﬁ]{2}\.', lambda m: m.group(0).replace('.', ''), text)
+
+def fix_fmancial(text) -> str:
+    return re.sub('fmancial', 'financial', text)
+
+def remove_comma_dot(text) -> str:
+    return re.sub(r'\.,', '', text)
+
+def remove_roman_num_dot(text) -> str:
+    return re.sub(r'\s(i{1,3}|iv|vi{1,3}|ix|x)\.', " ", text)
+
+def remove_nullstring(text):
+    return re.sub(r'(\x00|\x03)', ' ', text)
+
+def remove_spec_uni_char(text):
+    return re.sub(f'\\u0231', ' ', text)
+
+def pre_clean(text) -> str:
+    text = fix_split_words(text)
+    # remove newline
+    text = remove_newline(text)
+    # remove extra spaces
+    text = remove_extra_spaces(text)
+    # split cannot into can not
+    text = fix_cannot(text)
+    # fix fmancial
+    text = fix_fmancial(text)
+    # fix ,.
+    text = remove_comma_dot(text)
+    # remove roman numbers with dot
+    text = remove_roman_num_dot(text)
+    text = remove_nullstring(text)
+    text = remove_spec_uni_char(text)
+    return text
+
 def clean_text(text) -> str:
     text = remove_special_characters(text)
     text = replace_consecutive_newlines(text)

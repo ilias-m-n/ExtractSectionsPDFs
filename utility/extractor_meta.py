@@ -18,8 +18,11 @@ _auditor_page_head = ["report of independent auditors",
 
 "The Office of the Auditor General of Thailand has audited the"
 """
-_auditor_1 = ["have audited the",
-              "has audited the"
+_auditor_1 = ["we have audited the",
+              "i have audited the",
+              "has audited the",
+              "we conducted an independent audit",
+              "we have conducted an independent audit"
               ]
 
 
@@ -43,7 +46,10 @@ _auditor_11 = ["management ... is responsible for the preparation and fair prese
                "these consolidated financial statements are the responsibility of",
                "is responsible for",
                "directors ... are responsible for the preparation",
-               "are the responsibility of"
+               "are the responsibility of",
+               
+               "directors ... are responsible for preparing",
+               "directors ... are responsible for preparing"
                ]
 
 
@@ -57,8 +63,10 @@ _auditor_11 = ["management ... is responsible for the preparation and fair prese
 
 "my responsibility is to express an opinion on these statements based on my audit."
 """
-_auditor_12 = ["responsibility is to express an opinion",
-               "responsibility is to audit the",
+_auditor_12 = ["our responsibility is to express an opinion",
+               "our responsibility is to audit the",
+               "my responsibility is to express an opinion",
+               "my responsibility is to audit the",
                "our responsibilities",
                'my responsibilities'
                ]
@@ -184,22 +192,120 @@ _auditor_42 = ["our opinion ... fairly ... in all material",
               "in the ... opinion ... in all material respects",
                
                ]
+
+"in our opinion ... the ... financial statements ... in conformity with",
+"in our opinion ... the ... financial statements ... in accordance with",
+"in our opinion ... the ... financial statements ... comply with",
+
+"in our opinion ... these ... financial Statements ... in accordance with",
+"in our opinion ... these ... financial Statements ... in conformity with",
+"in our opinion ... these ... financial Statements ... comply with",
+
+"in my opinion ... the ... financial statements ... in conformity with",
+"in my opinion ... the ... financial statements ... in accordance with",
+"in my opinion ... the ... financial statements ... comply with",
+
+"in my opinion ... these ... financial Statements ... in accordance with",
+"in my opinion ... these ... financial Statements ... in conformity with",
+"in my opinion ... these ... financial Statements ... comply with",
+
+"in the ... opinion ... in all material respects",
+
+"in our opinion ... the ... financial statements ... in conformity with",
+"in our opinion ... the ... financial statements ... in accordance with",
+"in our opinion ... the ... financial statements ... comply with",
+
+"in our opinion ... these ... financial Statements ... in accordance with",
+"in our opinion ... these ... financial Statements ... in conformity with",
+"in our opinion ... these ... financial Statements ... comply with",
+
+"in my opinion ... the ... financial statements ... in conformity with",
+"in my opinion ... the ... financial statements ... in accordance with",
+"in my opinion ... the ... financial statements ... comply with",
+
+"in my opinion ... these ... financial Statements ... in accordance with",
+"in my opinion ... these ... financial Statements ... in conformity with",
+"in my opinion ... these ... financial Statements ... comply with",
+
+maybe add conform with
+maybe remove the 'the'
+"in the ... opinion ... in all material respects",
+    "in our opinion ... the ... nancial statements ... in conformity with",
+    "in our opinion ... the ... nancial statements ... in accordance with",
+    "in our opinion ... the ... nancial statements ... comply with",
+    
+    "in our opinion ... these ... nancial Statements ... in accordance with",
+    "in our opinion ... these ... nancial Statements ... in conformity with",
+    "in our opinion ... these ... nancial Statements ... comply with",
+    
+              "in my opinion ... the ... nancial statements ... in conformity with",
+              "in my opinion ... the ... nancial statements ... in accordance with",
+              "in my opinion ... the ... nancial statements ... comply with",
+    
+              "in my opinion ... these ... nancial Statements ... in accordance with",
+              "in my opinion ... these ... nancial Statements ... in conformity with",
+              "in my opinion ... these ... nancial Statements ... comply with",
+
+
+"in our opinion ... the ... financial statements ... in accordance with"
+
+
+"in our opinion ... the ... financial statements ... in conformity with",
+"in our opinion ... the ... financial statements ... in accordance with",
+"in our opinion ... the ... financial statements ... comply with",
+
+"in our opinion ... these ... financial Statements ... in accordance with",
+"in our opinion ... these ... financial Statements ... in conformity with",
+"in our opinion ... these ... financial Statements ... comply with",
+
+"in my opinion ... the ... financial statements ... in conformity with",
+"in my opinion ... the ... financial statements ... in accordance with",
+"in my opinion ... the ... financial statements ... comply with",
+
+"in my opinion ... these ... financial Statements ... in accordance with",
+"in my opinion ... these ... financial Statements ... in conformity with",
+"in my opinion ... these ... financial Statements ... comply with",
+    
+"in our opinion ... the ... nancial statements ... in conformity with",
+"in our opinion ... the ... nancial statements ... in accordance with",
+"in our opinion ... the ... nancial statements ... comply with",
+
+"in our opinion ... these ... nancial Statements ... in accordance with",
+"in our opinion ... these ... nancial Statements ... in conformity with",
+"in our opinion ... these ... nancial Statements ... comply with",
+
+"in my opinion ... the ... nancial statements ... in conformity with",
+"in my opinion ... the ... nancial statements ... in accordance with",
+"in my opinion ... the ... nancial statements ... comply with",
+
+"in my opinion ... these ... nancial Statements ... in accordance with",
+"in my opinion ... these ... nancial Statements ... in conformity with",
+"in my opinion ... these ... nancial Statements ... comply with",
 """
 _auditor_4 = [
-              "in the ... opinion ... in all material respects",
-              "in our opinion ... the ... financial statements ... in conformity with",
-              "in our opinion ... the ... financial statements ... in accordance with",
-              "in our opinion ... the ... financial statements ... comply with",
-              "in our opinion ... these ... financial Statements ... in accordance with",
-              "in our opinion ... these ... financial Statements ... in conformity with",
-              "in our opinion ... these ... financial Statements ... comply with",
-              "in my opinion ... the ... financial statements ... in conformity with",
-              "in my opinion ... the ... financial statements ... in accordance with",
-              "in my opinion ... the ... financial statements ... comply with",
-              "in my opinion ... these ... financial Statements ... in accordance with",
-              "in my opinion ... these ... financial Statements ... in conformity with",
-              "in my opinion ... these ... financial Statements ... comply with",
-              ]
+"in the ... opinion ... in all material respects",
+
+"in our opinion ... financial statements ... in conformity with",
+"in our opinion ... financial statements ... in accordance with",
+"in our opinion ... financial statements ... comply with",
+
+"in my opinion ... financial statements ... in conformity with",
+"in my opinion ... financial statements ... in accordance with",
+"in my opinion ... financial statements ... comply with",
+    
+"in our opinion ... nancial statements ... in conformity with",
+"in our opinion ... nancial statements ... in accordance with",
+"in our opinion ... nancial statements ... comply with",
+
+"in my opinion ... nancial statements ... in conformity with",
+"in my opinion ... nancial statements ... in accordance with",
+"in my opinion ... nancial statements ... comply with",
+
+"in our opinion ... financial report ... in accordance with",
+"in our opinion ... nancial report ... in accordance with"
+]
+
+
 
 """
 _auditor_std = ["the consolidated financial statements referred to above present fairly, in all material respects ... in conformity with",
@@ -247,8 +353,11 @@ in our opinion ... the consolidated financial statements present fairly, in all 
  "in my opinion ... these ... financial Statements ... in accordance with",
  "in my opinion ... these ... financial Statements ... in conformity with",
  "in my opinion ... these ... financial Statements ... comply with",
-"""
-_auditor_cons_std = ["in our opinion ... the ... financial statements ... in conformity with",
+
+
+ "in our opinion ... the consolidated fi nancial statements ... according to"
+
+ "in our opinion ... the ... financial statements ... in conformity with",
                      "in our opinion ... the ... financial statements ... in accordance with",
                      "in our opinion ... the ... financial statements ... comply with",
                      "in our opinion ... these ... financial Statements ... in accordance with",
@@ -260,6 +369,64 @@ _auditor_cons_std = ["in our opinion ... the ... financial statements ... in con
                      "in my opinion ... these ... financial Statements ... in accordance with",
                      "in my opinion ... these ... financial Statements ... in conformity with",
                      "in my opinion ... these ... financial Statements ... comply with",
+
+                     "in our opinion ... the ... financial statements ... according to",
+
+                     "in our opinion ... the ... nancial statements ... in conformity with",
+                     "in our opinion ... the ... nancial statements ... in accordance with",
+                     "in our opinion ... the ... nancial statements ... comply with",
+                     "in our opinion ... these ... nancial Statements ... in accordance with",
+                     "in our opinion ... these ... nancial Statements ... in conformity with",
+                     "in our opinion ... these ... nancial Statements ... comply with",
+                     "in my opinion ... the ... nancial statements ... in conformity with",
+                     "in my opinion ... the ... nancial statements ... in accordance with",
+                     "in my opinion ... the ... nancial statements ... comply with",
+                     "in my opinion ... these ... nancial Statements ... in accordance with",
+                     "in my opinion ... these ... nancial Statements ... in conformity with",
+                     "in my opinion ... these ... nancial Statements ... comply with",
+                     
+                     "in our opinion ... the ... nancial statements ... according to",
+
+
+                     "in *** opinion ... financial statements ... in accordance with"
+
+                     "in .... opinion ... financial report ... in accordance with"
+"""
+_auditor_cons_std = ["in .... opinion ... financial statements ... in conformity with",
+                     "in .... opinion ... financial statements ... in accordance with",
+                     "in .... opinion ... financial statements ... in compliance with",
+                     "in .... opinion ... financial statements ... comply with",
+                     "in .... opinion ... financial statements ... according to",
+                     
+                     "in .... opinion ... financial statements ... in agreement with",
+
+                     "in .... opinion ... nancial statements ... in conformity with",
+                     "in .... opinion ... nancial statements ... in accordance with",
+                     "in .... opinion ... nancial statements ... in compliance with",
+                     "in .... opinion ... nancial statements ... comply with",                     
+                     "in .... opinion ... nancial statements ... according to",
+
+                                        
+                     "in .... opinion ... nancial statements ... aggreement with",
+
+
+
+                     "the ... accounts ... prepared ... in accordance with",
+                     "in .... opinion ... financial report ... in accordance with",
+                     "in .... opinion ... financial report ... in conformity with",
+                     "in .... opinion ... financial report ... in compliance with",
+                     "in .... opinion ... financial report ... comply with",
+                     "in .... opinion ... financial report ... according to",
+
+                     "in .... opinion ... financial statements ... with respect to",
+
+                     "in .... opinion ... financial statements ... in accordance with",
+
+                     "in the ... opinion ... financial statements ... in accordance with",
+                     "in the ... opinion ... nancial statements ... in accordance with"
+
+                                         
+                     
                      ]
 
 """
@@ -269,6 +436,7 @@ _auditor_fin_std = ["in our opinion ... the --- financial statements ... in conf
                     "in our opinion ... the financial report ... in accordance with ... complying with"
                     ]
 
+# removed auditor_11
 
 _auditor_sections = (_auditor_1, _auditor_11, _auditor_12, _auditor_2, _auditor_21, _auditor_3, _auditor_4, )
 _auditor_standards = (_auditor_cons_std, _auditor_fin_std, )
@@ -383,7 +551,7 @@ consolidated financial statements are prepared in accordance with the Turkish Ac
 Auditing Standards Authority (“POAASA”).
 
 """
-_notes_std = ["these ... financial statements ... prepared ... comply with",
+_notes_std = ["these ... financial statements ... prepared ... comply ... with",
               "these ... financial statements ... prepared ... in accordance with",
               "these ... financial statements ... prepared ... in compliance with",
               "these ... financial statements ... presented ... in accordance with",
@@ -391,15 +559,66 @@ _notes_std = ["these ... financial statements ... prepared ... comply with",
               "the ... financial statements ... presented ... in accordance with",
               "the ... financial statements ... presented ... in compliance with",
               "the ... financial statements ... prepared ... in compliance with",
-              "the ... financial statements ... prepared ... comply with",
+              "the ... financial statements ... prepared ... comply ... with",
               "the ... financial statements ... drawn up ... in accordance with",
               "the ... financial statements ... drawn up ... in compliance with",
-              "the ... financial statements ... drawn up ... comply with",
+              "the ... financial statements ... drawn up ... comply ... with",
               "the accounts ... prepared ... in accordance with",
               "the ... financial report ... prepared ... in accordance with",
-              "the ... prepares its financial statements in accordance with",
-              "the ... prepares its financial statements in compliance with",
-]
+              "the ... prepares ... financial statements in accordance with",
+              "the ... prepares ... financial statements in compliance with",
+
+              "these ... financial statements ... prepared ... according to",
+              "the ... financial statements ... prepared ... according to",
+
+              "the ... prepares ... financial statements ... in accordance with",
+              "the ... prepares ... financial statements ... in compliance with",
+              "the ... prepares ... financial statements ... in conformity with",
+              "the ... prepares ... financial statements ... complies with",
+              "the ... prepares ... financial statements ... according to",
+
+              "these ... nancial statements ... prepared ... comply ... with",
+              "these ... nancial statements ... prepared ... in accordance with",
+              "these ... nancial statements ... prepared ... in compliance with",
+              "these ... nancial statements ... presented ... in accordance with",
+              "the ... nancial statements ... prepared ... in accordance with",
+              "the ... nancial statements ... presented ... in accordance with",
+              "the ... nancial statements ... presented ... in compliance with",
+              "the ... nancial statements ... prepared ... in compliance with",
+              "the ... nancial statements ... prepared ... comply ... with",
+              "the ... nancial statements ... drawn up ... in accordance with",
+              "the ... nancial statements ... drawn up ... in compliance with",
+              "the ... nancial statements ... drawn up ... comply ... with",
+              "the accounts ... prepared ... in accordance with",
+              "the ... nancial report ... prepared ... in accordance with",
+              "the ... prepares ... nancial statements in accordance with",
+              "the ... prepares ... nancial statements in compliance with",
+
+              "these ... nancial statements ... prepared ... according to",
+              "the ... nancial statements ... prepared ... according to",
+
+              "the ... prepares ... nancial statements ... in accordance with",
+              "the ... prepares ... nancial statements ... in compliance with",
+              "the ... prepares ... nancial statements ... in conformity with",
+              "the ... prepares ... nancial statements ... comply ... with",
+              "the ... prepares ... nancial statements ... according to",
+
+              "these ... financial statements ... prepared ... in conformity with",
+              "these ... nancial statements ... prepared ... in conformity with",
+              "the ... financial statements ... prepared ... in conformity with",
+              "the ... nancial statements ... prepared ... in conformity with",
+              "financial statements ... prepared ... in accordance with",
+              "nancial statements ... prepared ... in accordance with",
+
+              "prepared ... financial statements ... in accordance with",
+              "prepared ... nancial statements ... in accordance with",
+              "prepared ... financial statements ... in compliance with",
+              "prepared ... nancial statements ... in compliance with",
+              "prepared ... financial statements ... in according to",
+              "prepared ... nancial statements ... in according to",
+              "prepared ... financial statements ... comply ... with",
+              "prepared ... nancial statements ... comply ... with",
+             ]
 
 
 _notes_sections = (_notes_head, _notes_head2, _notes_1, )

@@ -6,7 +6,7 @@ import pandas as pd
 
 import utility.extractor_meta as em
 import utility.utility as util
-from utility.Extractor import PageNumberExtractor
+from utility.Extractor import PageNumberExtractor, PageNumberExtractor_SentenceBase
 
 
 def worker(input_dict, output_dict, lock, processed_section_anchors, total_count):
@@ -23,14 +23,15 @@ def worker(input_dict, output_dict, lock, processed_section_anchors, total_count
                                      flag_only_max_hits=False,
                                      flag_allow_overlapping_sections=False,
                                      flag_adjust_real_page_num=False,
-                                     flag_do_ocr=False,
+                                     flag_do_ocr=True,
+                                     thresh_ocr=100,
                                      flag_allow_duplicate_hits_in_groups=True,
-                                     sections_with_page_skip_groups=['auditor'],
-                                     thresh_ocr=100).run()
+                                     sections_with_page_skip_groups=['auditor']
+                                     ).run()
 
         with lock:
             output_dict[doc_id] = result
-            if (len(output_dict) % 50 == 0) or (len(output_dict) == total_count):
+            if (len(output_dict) % 10 == 0) or (len(output_dict) == total_count):
                 print(len(output_dict), '/', total_count)
 
 
@@ -46,7 +47,7 @@ def main():
     """
     load file paths
     """
-    filepath_df = pd.read_csv(os.path.join(path_input_meta, 'test1.csv'))
+    filepath_df = pd.read_csv(os.path.join(path_input_meta, 'full_test.csv'))
     filepath_dic = {row.doc_id: row.doc_path for _, row in filepath_df.iterrows()}
     total_count = len(filepath_dic)
 
@@ -55,6 +56,7 @@ def main():
     """
     section_anchors = {'notes': em._notes_sections, 'auditor': em._auditor_sections}
     processed_section_anchors = util.process_section_anchors(section_anchors)
+    sections = section_anchors.keys()
 
     """
     set up multiproessing
@@ -65,7 +67,7 @@ def main():
     lock = manager.Lock()
 
     num_workers = util.get_num_workers('How many workers would you like to employ?\t',
-                                       1, 10)
+                                       1, 36)
 
     with Pool(processes=num_workers) as pool:
         for _ in range(num_workers):
@@ -81,8 +83,18 @@ def main():
     print('Workers closed.')
 
     output_df = pd.DataFrame(output_dict.values())
+
+    # extract documents where algorithm failed to extract page nums for all desired sections
+    mask_missing = output_df.apply(lambda row: any(len(row[section]) == 0 for section in sections), axis = 1)
+    output_missing_df = output_df[mask_missing].copy()
+    output_complete_df = output_df[~mask_missing].copy()
+    
     output_filename = f'page_nums_{datetime.now().strftime("%y_%m_%d_%H_%M")}.parquet'
+    output_missing_filename = f'page_nums_missing_{datetime.now().strftime("%y_%m_%d_%H_%M")}.parquet'
+    output_complete_filename = f'page_nums_complete_{datetime.now().strftime("%y_%m_%d_%H_%M")}.parquet'
     output_df.to_parquet(os.path.join(path_extracted_page_nums, output_filename), index=False)
+    output_missing_df.to_parquet(os.path.join(path_extracted_page_nums, output_missing_filename), index=False)
+    output_complete_df.to_parquet(os.path.join(path_extracted_page_nums, output_complete_filename), index=False)
 
 
 if __name__ == "__main__":

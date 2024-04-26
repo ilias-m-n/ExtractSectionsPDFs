@@ -130,6 +130,8 @@ def full_clean_text_keep_sent_struc(text):
         if token == '.':
             sentences.append(' '.join(curr))
             curr = []
+    if len(curr) != 0:
+        sentences.append(' '.join(curr))
 
     return sentences
 
@@ -144,8 +146,9 @@ def count_tokens(text: str, encoding: str = "cl100k_base") -> int:
 
 # prepare anchors for text extraction
 def prep_extract_anchors(anchor, wild_c):
-    anchor = anchor.replace(' ... ', '(?:(?!\s\.\s).){,' + wild_c + '}?')
-    anchor = anchor.replace(' --- ', '(?!\sconsolidated\s\b)\b\w*')
+    anchor = anchor.replace(' ... ', r'(?:(?!\s\.\s).){,' + wild_c + '}?')
+    anchor = anchor.replace(' --- ', r'(?!\sconsolidated\s\b)\b\w*')
+    anchor = anchor.replace(' .... ', r'\s(our|my)\s')
     return anchor
 
 

@@ -1,9 +1,15 @@
 /.ipynb_checkpoints/*
 /.idea/*
 /activate_env.bat
+/activate_venv.bat
+/data/input_meta/*
 /data/raw_pdf_files/*
 /data/first_build/*
 /data/testing_meta/*
+/data/extracted_page_nums/*
+/data/extracted_text_files/*
+/data/gpt_meta/*
+/data/output_meta/*
 /first_build/*
 /testing_meta/*
 /doc_analysis.txt
@@ -13,3 +19,6 @@
 /sample_page_locations.xlsx
 /fix.csv
 /olds/*
+/Untitled.ipynb
+/git_nasri
+/git_nasri.pub
