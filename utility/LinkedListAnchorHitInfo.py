@@ -52,7 +52,9 @@ class LinkedListAnchorHitInfo:
         current = self.head
         if flag_only_max:
             min_hits = self.max_hit
-        min_hits = min(min_hits, self.max_hit)
+        #if self.max_hit < min_hits and self.max_hit > 1:
+        #    min_hits = self.max_hit
+        #min_hits = min(min_hits, self.max_hit)
         while current:
             if current.hits < min_hits:
                 if current.prev:

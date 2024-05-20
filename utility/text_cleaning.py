@@ -101,6 +101,9 @@ def fix_lonely_dots(text) -> str:
 def remove_lonely_letterDot(text) -> str:
     return re.sub(r'\b(?:([A-ZŞﬁ])\.)*[A-ZŞﬁ]\.', lambda m: m.group(0).replace('.', ''), text)
 
+def remove_lonely_letterSpaceDot(text) -> str:
+    return re.sub(r'\b[A-ZŞﬁ]\b\s(\.)', lambda m: m.group(0).replace('.', ''), text)
+
 def remove_double_letterDot(text) -> str:
     return re.sub(r'\b[A-ZŞﬁ]{2}\.', lambda m: m.group(0).replace('.', ''), text)
 
@@ -111,7 +114,7 @@ def remove_comma_dot(text) -> str:
     return re.sub(r'\.,', '', text)
 
 def remove_roman_num_dot(text) -> str:
-    return re.sub(r'\s(i{1,3}|iv|vi{1,3}|ix|x)\.', " ", text)
+    return re.sub(r'\s(i{1,3}|iv|vi{1,3}|ix|x|a|b|c|d|No)\.', " ", text)
 
 def remove_nullstring(text):
     return re.sub(r'(\x00|\x03)', ' ', text)

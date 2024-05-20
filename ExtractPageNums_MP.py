@@ -19,14 +19,16 @@ def worker(input_dict, output_dict, lock, processed_section_anchors, total_count
         result = PageNumberExtractor(doc_id=doc_id,
                                      path=doc_path,
                                      section_anchors=processed_section_anchors,
-                                     min_anchor_hit_ratio=0.5,
+                                     min_anchor_hit_ratio=0.4,
                                      flag_only_max_hits=False,
                                      flag_allow_overlapping_sections=False,
                                      flag_adjust_real_page_num=False,
                                      flag_do_ocr=True,
                                      thresh_ocr=100,
                                      flag_allow_duplicate_hits_in_groups=True,
-                                     sections_with_page_skip_groups=['auditor']
+                                     sections_do_grouping=['auditor'],
+                                     sections_with_page_skip_groups=None,
+                                     allowance_wildcards_reg_matches=600,
                                      ).run()
 
         with lock:
@@ -47,7 +49,11 @@ def main():
     """
     load file paths
     """
-    filepath_df = pd.read_csv(os.path.join(path_input_meta, 'full_test.csv'))
+
+    
+    #filepath_df = pd.read_csv(os.path.join(path_input_meta, 'full_test.csv'))
+    path_filepath_df = util.select_file(path_input_meta, 'Select Input File')
+    filepath_df = pd.read_csv(path_filepath_df)
     filepath_dic = {row.doc_id: row.doc_path for _, row in filepath_df.iterrows()}
     total_count = len(filepath_dic)
 
@@ -71,11 +77,13 @@ def main():
 
     with Pool(processes=num_workers) as pool:
         for _ in range(num_workers):
+            print('hi')
             pool_info = pool.apply_async(worker, args=(input_dict,
                                                        output_dict,
                                                        lock,
                                                        processed_section_anchors,
                                                        total_count))
+            #print(pool_info.get())
 
         pool.close()
         pool.join()

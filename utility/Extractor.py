@@ -36,6 +36,7 @@ class TermExtractor:
         self.anchors = anchors
         self.anchor_add_word_window = anchor_add_word_window
         self.allowance_wildcards_reg_matches = allowance_wildcards_reg_matches
+        self.wild_c = str(allowance_wildcards_reg_matches)
 
         self.flag_capture_surrounding_sentences = flag_capture_surrounding_sentences
         self.surrounding_sentences_margin = surrounding_sentences_margin
@@ -95,6 +96,7 @@ class TermExtractor:
 
     def preprocess_text(self):
         for page_num in self.text:
+            
             # structure paragraphs
             self.text[page_num] = tc.remove_space_betw_newlines(''.join(self.text[page_num]))
 
@@ -116,24 +118,29 @@ class TermExtractor:
             """
             self.text[page_num] = tc.pre_clean(self.text[page_num])
 
-            if page_num == 67:
-                print(self.text[page_num])
+            #if page_num == 67:
+            #    print(self.text[page_num])
+
+            #print(page_num)
+            #if page_num == 50:
+            #    print(self.text[page_num])
             
             # fix single cap letter with dot
             self.text[page_num] = tc.remove_lonely_letterDot(self.text[page_num])
             self.text[page_num] = tc.remove_double_letterDot(self.text[page_num])
+            self.text[page_num] = tc.remove_lonely_letterSpaceDot(self.text[page_num])
 
             # self.text[page_num] = [util.full_process_text(para) for para in self.text[page_num]]
             # self.text[page_num] = " ".join(self.text[page_num])
 
-            
             # clean text
             self.text[page_num] = util.full_clean_text_keep_sent_struc(self.text[page_num])
             
             self.text[page_num] = [tc.clean_less(sent) for sent in self.text[page_num]]
 
-            if page_num == 67:
-                print(self.text[page_num])
+            #print(page_num)
+            #if page_num == 50:
+            #    print(self.text[page_num])
 
             
 
@@ -147,8 +154,8 @@ class TermExtractor:
         for key, sent in self.text_lemma.items():
             for anchor in self.anchors:
                 for sub_anchor in anchor:
-                    wild_c = str(self.allowance_wildcards_reg_matches)
-                    sub_anchor_pattern = re.compile(util.prep_extract_anchors(sub_anchor, wild_c))
+                    #wild_c = str(self.allowance_wildcards_reg_matches)
+                    sub_anchor_pattern = re.compile(util.prep_extract_anchors(sub_anchor, self.wild_c))
 
                     match = re.search(sub_anchor_pattern, sent)
                     if match is not None:
@@ -184,14 +191,18 @@ class TermExtractor:
             curr = self.text_lemma[index]
             for anchor in self.anchors:
                 for sub_anchor in anchor:
-                    wild_c = str(self.allowance_wildcards_reg_matches)
-                    sub_anchor_pattern = re.compile(util.prep_extract_anchors(sub_anchor, wild_c))
+                    #wild_c = str(self.allowance_wildcards_reg_matches)
+                    sub_anchor_pattern = re.compile(util.prep_extract_anchors(sub_anchor, self.wild_c))
                     for match in re.finditer(sub_anchor_pattern, curr):
                         self.lemma_sent_anchor_intervals[index].append((match.start(), match.end()))
+                        #print(index, match.start(), match.end())
+        #print('---')
 
         # create word pos from lemma anchor indexes
         lemma_char_pos_to_word_pos = {}
         for index in self.anchor_hits:
+            #print(index)
+            #print(self.text_lemma[index])
             lemma_char_pos_to_word_pos[index] = []
             curr_word_index = 0
             for i, c in enumerate(self.text_lemma[index]):
@@ -204,17 +215,24 @@ class TermExtractor:
                     lemma_char_pos_to_word_pos[index].append(-1)
                     continue
                 lemma_char_pos_to_word_pos[index].append(curr_word_index)
+            #print(lemma_char_pos_to_word_pos[index])
+            #print()
 
         anchor_word_pos_intervals = {}
+        
         for index in self.anchor_hits:
             anchor_word_pos_intervals[index] = []
             for interval in self.lemma_sent_anchor_intervals[index]:
                 start = lemma_char_pos_to_word_pos[index][interval[0]]
                 end = lemma_char_pos_to_word_pos[index][interval[1] - 1]
+                #print(index, start, end)
                 anchor_word_pos_intervals[index].append((start, end))
 
         # translate word pos to char intervals in unlemmatized text
         wordpos2charindex = {}
+
+        #print('----')
+
         for index in self.anchor_hits:
             curr_word_index = 0
             wordpos2charindex[index] = {}
@@ -229,6 +247,7 @@ class TermExtractor:
             char_pos_intervals[index] = []
             self.terms[index] = []
             for interval in anchor_word_pos_intervals[index]:
+                #print(index, interval[0],interval[1])
                 start = wordpos2charindex[index][interval[0]][0]
                 end = wordpos2charindex[index][interval[1]][-1] + 1
                 char_pos_intervals[index].append((start, end))
@@ -242,7 +261,7 @@ class TermExtractor:
 
             for anchor in self.anchors_mv:
                 for sub_anchor in anchor:
-                    sub_anchor_pattern = re.compile(util.prep_extract_anchors(sub_anchor, '400'))
+                    sub_anchor_pattern = re.compile(util.prep_extract_anchors(sub_anchor, self.wild_c))
                     flag_hit = False
                     for sent in lemma_interval:
                         if re.search(sub_anchor_pattern, sent):
@@ -295,6 +314,7 @@ class PageTextExtractor:
         self.anchors = anchors
         self.anchor_add_word_window = anchor_add_word_window
         self.allowance_wildcards_reg_matches = allowance_wildcards_reg_matches
+        self.wild_c = str(allowance_wildcards_reg_matches)
 
         self.flag_do_ocr = flag_do_ocr
         self.thresh_ocr = thresh_ocr
@@ -376,8 +396,8 @@ class PageTextExtractor:
         for anchor in self.anchors:
 
             for sub_anchor in anchor:
-                wild_c = str(self.allowance_wildcards_reg_matches)
-                sub_anchor_pattern = re.compile(util.prep_extract_anchors(sub_anchor, wild_c))
+                #wild_c = str(self.allowance_wildcards_reg_matches)
+                sub_anchor_pattern = re.compile(util.prep_extract_anchors(sub_anchor, self.wild_c))
                 for match in re.finditer(sub_anchor_pattern, self.text_lemma):
                     # print(sub_anchor)
                     self.lemma_anchor_intervals.append((match.start(), match.end()))
@@ -486,7 +506,9 @@ class PageNumberExtractor:
                  flag_do_ocr=False,
                  thresh_ocr=100,
                  flag_allow_duplicate_hits_in_groups=False,
-                 sections_with_page_skip_groups=None
+                 sections_do_grouping=None,
+                 sections_with_page_skip_groups=None,
+                 allowance_wildcards_reg_matches = 400,
                  ):
 
         self.doc_id = doc_id
@@ -505,7 +527,7 @@ class PageNumberExtractor:
         self.attach_anchor_id()
 
         self.min_anchor_hit_ratio = min_anchor_hit_ratio
-        self.min_anchor_hits = {key: math.ceil(num * self.min_anchor_hit_ratio) \
+        self.min_anchor_hits = {key: max(math.floor(num * self.min_anchor_hit_ratio), 2) \
                                 for key, num in self.num_anchors_per_section.items()}
 
         self.flag_only_max_hits = flag_only_max_hits
@@ -517,7 +539,10 @@ class PageNumberExtractor:
         self.thresh_ocr = thresh_ocr
         
         self.flag_allow_duplicate_hits_in_groups = flag_allow_duplicate_hits_in_groups
+        self.sections_do_grouping = sections_do_grouping if sections_do_grouping else []
         self.sections_with_page_skip_groups = sections_with_page_skip_groups if sections_with_page_skip_groups else []
+
+        self.wild_c = str(allowance_wildcards_reg_matches)
 
         self.hits_dict = dict()
 
@@ -532,7 +557,7 @@ class PageNumberExtractor:
             anchor_id = 0
             self.section_anchor_ids[section] = {}
             for anchor in anchors:
-                self.section_anchor_ids[section][anchor] = anchor_id
+                self.section_anchor_ids[section][anchor_id] = anchor
                 anchor_id += 1
 
     # Read and clean PDF
@@ -575,33 +600,33 @@ class PageNumberExtractor:
 
     # find section hits
     def find_section_hits(self):
-        for section, anchors in self.section_anchors.items():
+        for section in self.section_anchors.keys():
             self.hits_ll[section] = ll.LinkedListAnchorHitInfo()
-            #print(section)
+            print(section)
             for page_num in self.text:
-                hits, hit_ids = self.find_anchor_hits(section, self.text[page_num], anchors)
-                #print(page_num, hit_ids)
-                #if(page_num in [39]):
-                #    print(self.text[page_num])
-                #    print(self.text[page_num][-1])
-                #    print(ord(self.text[page_num][-1]))
-                #    print(format(561, 'X'))
+                #print(page_num)
+                hits, hit_ids = self.find_anchor_hits(section, self.text[page_num])
+                if len(hit_ids) > 1:
+                    print(page_num, hit_ids)
+                #if(page_num in [14]):
+                #   print(self.text[page_num])
                 self.hits_ll[section].append(page_num + self.page_num_fixer, hits, hit_ids)
 
-    def find_anchor_hits(self, section, page, anchors):
+    def find_anchor_hits(self, section, page):
         hits = 0
         hit_ids = []
-        for sub_anchor in anchors:
+        for id_anchor, sub_anchor in self.section_anchor_ids[section].items():
             flag_hit = False
             
             # sub_anchor_patterns = [re.compile(ele.replace('...', '.*?')) for ele in sub_anchor]
-            sub_anchor_patterns = [re.compile(util.prep_extract_anchors(ele, '400')) for ele in sub_anchor]
+            sub_anchor_patterns = [re.compile(util.prep_extract_anchors(ele, self.wild_c)) for ele in sub_anchor]
             for pattern in sub_anchor_patterns:
                 if re.search(pattern, page):
+                    #print(pattern)
+                    #print(page)
                     hits += 1
                     flag_hit = True
-                    hit_ids.append(self.section_anchor_ids[section][sub_anchor])
-                    # print(pattern)
+                    hit_ids.append(id_anchor)
                     break
         return hits, set(hit_ids)
 
@@ -615,7 +640,8 @@ class PageNumberExtractor:
 
     def combine_page_groups(self):
         for section in self.hits_ll:
-            self.hits_ll[section].combine_groups(self.flag_allow_duplicate_hits_in_groups)
+            if section in self.sections_do_grouping:
+                self.hits_ll[section].combine_groups(self.flag_allow_duplicate_hits_in_groups)
             if section in self.sections_with_page_skip_groups:
                 self.hits_ll[section].combine_skip_groups(self.flag_allow_duplicate_hits_in_groups)
             self.hits_ll[section].remove_below_min_hits(self.min_anchor_hits[section], self.flag_only_max_hits)
@@ -673,7 +699,8 @@ class PageNumberExtractor_SentenceBase:
                  flag_do_ocr=False,
                  thresh_ocr=100,
                  flag_allow_duplicate_hits_in_groups=False,
-                 sections_with_page_skip_groups=None):
+                 sections_with_page_skip_groups=None,
+                 allowance_wildcards_reg_matches = 400,):
 
         self.doc_id = doc_id
         self.path = path
@@ -704,6 +731,8 @@ class PageNumberExtractor_SentenceBase:
         
         self.flag_allow_duplicate_hits_in_groups = flag_allow_duplicate_hits_in_groups
         self.sections_with_page_skip_groups = sections_with_page_skip_groups if sections_with_page_skip_groups else []
+
+        self.wild_c = str(allowance_wildcards_reg_matches)
 
         self.hits_dict = dict()
 
@@ -781,7 +810,7 @@ class PageNumberExtractor_SentenceBase:
         for sub_anchor in anchors:
             flag_hit = False
             # sub_anchor_patterns = [re.compile(ele.replace('...', '.*?')) for ele in sub_anchor]
-            sub_anchor_patterns = [re.compile(util.prep_extract_anchors(ele, '400')) for ele in sub_anchor]
+            sub_anchor_patterns = [re.compile(util.prep_extract_anchors(ele, self.wild_c)) for ele in sub_anchor]
             for pattern in sub_anchor_patterns:
                 for line in page:
                     if re.search(pattern, line):

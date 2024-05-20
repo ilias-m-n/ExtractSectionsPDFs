@@ -9,7 +9,32 @@ import numpy as np
 from PIL import Image
 from transformers import pipeline
 from spellchecker import SpellChecker
+from tkinter import Tk, filedialog
+import re
 
+# File Dialog
+def select_file(path, title):
+    root = Tk()
+    root.withdraw()  # Hides the main window
+    file_path = filedialog.askopenfilename(initialdir=path, title=title)
+    if file_path:
+        print(f"File selected: {file_path}")
+    return file_path
+
+# check whether folder is empty
+def check_files_in_directory(path):
+    eles = os.listdir(path)
+    eles = [ele for ele in eles if ele != '.gitkeep']
+    return len(eles) > 0
+
+# delete file 
+def delete_file(file_path):
+    try:
+        os.remove(file_path)
+        print(f"File {file_path} has been deleted successfully.")
+    except OSError as error:
+        print(f"Error: {error}")
+        print(f"Failed to delete {file_path}.")
 
 def load_file_fitz(path):
     return fitz.open(path)
@@ -61,6 +86,7 @@ def preprocess_image_for_ocr(img):
 
 # Clean Text Preliminary
 def full_process_text(text):
+    
     text = text.lower()
 
     punctuation_except_dots = string.punctuation.replace('.', '') + '’‘“”„'
@@ -78,6 +104,33 @@ def full_process_text(text):
     lemma_tokens = [lemmatizer.lemmatize(token) for token in stemmed_tokens]
 
     text = " ".join(lemma_tokens)
+    return text
+
+def full_process_anchors(text):
+    
+    flag_first_space = False
+    if text[0] == ' ':
+        flag_first_space = True
+    
+    text = text.lower()
+
+    punctuation_except_dots = string.punctuation.replace('.', '') + '’‘“”„'
+    text = text.translate(str.maketrans('', '', punctuation_except_dots))
+
+    # tokenization
+    tokens = nltk.word_tokenize(text)
+
+    # stemming
+    stemmer = PorterStemmer()
+    stemmed_tokens = [stemmer.stem(token) for token in tokens if token != '.']
+
+    # lemmatization
+    lemmatizer = WordNetLemmatizer()
+    lemma_tokens = [lemmatizer.lemmatize(token) for token in stemmed_tokens]
+
+    text = " ".join(lemma_tokens)
+    if flag_first_space:
+        text = ' ' + text
     return text
 
 def full_process_text_keep_sentence_dots(text):
@@ -106,9 +159,21 @@ def process_section_anchors(section_anchors):
     for section, parts in section_anchors.items():
         processed_section_anchors[section] = list()
         for part in section_anchors[section]:
-            processed_part = tuple([full_process_text(p) for p in part])
+            processed_part = tuple([full_process_anchors(p) for p in part])
             processed_section_anchors[section].append(processed_part)
     return processed_section_anchors
+
+# prepare anchors for text extraction
+def prep_extract_anchors(anchor, wild_c):
+    anchor = anchor.replace(' .......... ', r'(e|i)\b ')
+    anchor = anchor.replace(' ......... ', r'.{0,2}\b ')
+    anchor = anchor.replace(' ........ ', r' \b.{0,2}')
+    anchor = anchor.replace('......', r'(prepar|present|draws up)')
+    anchor = anchor.replace('.....', r'(prepar|present|drawn up)')
+    #anchor = anchor.replace(' ... ', r'(?:(?!\s\.\s).){0,' + wild_c + '}?')
+    anchor = anchor.replace(' ... ', r'((?!\s\.\s|in our opinion|in my opinion).){0,' + str(wild_c) + '}?')
+    anchor = anchor.replace(' .... ', r'\s(our|my)\s')
+    return anchor
 
 def full_clean_text(text):
     punctuation_except_dots = string.punctuation.replace('.', '').replace("'", '') + "’‘“”„"
@@ -143,13 +208,6 @@ def full_clean_text_keep_sent_struc(text):
 def count_tokens(text: str, encoding: str = "cl100k_base") -> int:
     encoding = get_encoding(encoding)
     return len(encoding.encode(text))
-
-# prepare anchors for text extraction
-def prep_extract_anchors(anchor, wild_c):
-    anchor = anchor.replace(' ... ', r'(?:(?!\s\.\s).){,' + wild_c + '}?')
-    anchor = anchor.replace(' --- ', r'(?!\sconsolidated\s\b)\b\w*')
-    anchor = anchor.replace(' .... ', r'\s(our|my)\s')
-    return anchor
 
 
 def merge_overlapping_intervals(intervals):
