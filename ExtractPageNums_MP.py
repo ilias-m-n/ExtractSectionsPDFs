@@ -9,12 +9,13 @@ import utility.utility as util
 from utility.Extractor import PageNumberExtractor, PageNumberExtractor_SentenceBase
 
 
-def worker(input_dict, output_dict, lock, processed_section_anchors, total_count):
+def worker(input_dict, output_dict, running_dict, lock, processed_section_anchors, total_count):
     while True:
         with lock:
             if not input_dict:
                 break
             doc_id, doc_path = input_dict.popitem()
+            running_dict[doc_id] = doc_path
 
         result = PageNumberExtractor(doc_id=doc_id,
                                      path=doc_path,
@@ -33,11 +34,19 @@ def worker(input_dict, output_dict, lock, processed_section_anchors, total_count
 
         with lock:
             output_dict[doc_id] = result
+            running_dict.pop(doc_id)
             if (len(output_dict) % 10 == 0) or (len(output_dict) == total_count):
                 print(len(output_dict), '/', total_count)
+            if (len(running_dict) < 15):
+                print(running_dict.keys())
 
 
 def main():
+    """
+    datetime
+    """
+    time = datetime.now().strftime("%Y_%m_%d_%H_%M")
+    
     """
     directory paths
     """
@@ -49,10 +58,8 @@ def main():
     """
     load file paths
     """
-
-    
-    #filepath_df = pd.read_csv(os.path.join(path_input_meta, 'full_test.csv'))
     path_filepath_df = util.select_file(path_input_meta, 'Select Input File')
+    name_filepath_file = path_filepath_df.split('/')[-1].split('.')[0]
     filepath_df = pd.read_csv(path_filepath_df)
     filepath_dic = {row.doc_id: row.doc_path for _, row in filepath_df.iterrows()}
     total_count = len(filepath_dic)
@@ -69,6 +76,7 @@ def main():
     """
     manager = Manager()
     input_dict = manager.dict(filepath_dic)
+    running_dict = manager.dict()
     output_dict = manager.dict()
     lock = manager.Lock()
 
@@ -80,6 +88,7 @@ def main():
             print('hi')
             pool_info = pool.apply_async(worker, args=(input_dict,
                                                        output_dict,
+                                                       running_dict,
                                                        lock,
                                                        processed_section_anchors,
                                                        total_count))
@@ -97,9 +106,9 @@ def main():
     output_missing_df = output_df[mask_missing].copy()
     output_complete_df = output_df[~mask_missing].copy()
     
-    output_filename = f'page_nums_{datetime.now().strftime("%y_%m_%d_%H_%M")}.parquet'
-    output_missing_filename = f'page_nums_missing_{datetime.now().strftime("%y_%m_%d_%H_%M")}.parquet'
-    output_complete_filename = f'page_nums_complete_{datetime.now().strftime("%y_%m_%d_%H_%M")}.parquet'
+    output_filename = f'{name_filepath_file}_page_nums_{time}.parquet'
+    output_missing_filename = f'{name_filepath_file}_page_nums_missing_{time}.parquet'
+    output_complete_filename = f'{name_filepath_file}_page_nums_complete_{time}.parquet'
     output_df.to_parquet(os.path.join(path_extracted_page_nums, output_filename), index=False)
     output_missing_df.to_parquet(os.path.join(path_extracted_page_nums, output_missing_filename), index=False)
     output_complete_df.to_parquet(os.path.join(path_extracted_page_nums, output_complete_filename), index=False)

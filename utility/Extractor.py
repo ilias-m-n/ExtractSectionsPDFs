@@ -301,7 +301,8 @@ class PageTextExtractor:
                  anchor_add_word_window,
                  allowance_wildcards_reg_matches,
                  flag_do_ocr=False,
-                 thresh_ocr = 100):
+                 thresh_ocr = 100,
+                 testing_mode = False):
 
         self.doc_id = doc_id
         self.path = path
@@ -509,6 +510,7 @@ class PageNumberExtractor:
                  sections_do_grouping=None,
                  sections_with_page_skip_groups=None,
                  allowance_wildcards_reg_matches = 400,
+                 testing_mode = False
                  ):
 
         self.doc_id = doc_id
@@ -546,6 +548,8 @@ class PageNumberExtractor:
 
         self.hits_dict = dict()
 
+        self.testing_mode = testing_mode
+
     def run(self):
         self.parse_pdf()
         self.find_section_hits()
@@ -571,7 +575,11 @@ class PageNumberExtractor:
 
     def parse_pages(self):
         self.doc_num_pages = len(self.pdf)
+        if self.testing_mode:
+            print('going in')
         for index, page in enumerate(self.pdf):
+            if self.testing_mode:
+                print(index)
             text = page.get_text()
             self.text[index] = text
             if self.flag_do_ocr and len(text) < self.thresh_ocr:
@@ -602,14 +610,17 @@ class PageNumberExtractor:
     def find_section_hits(self):
         for section in self.section_anchors.keys():
             self.hits_ll[section] = ll.LinkedListAnchorHitInfo()
-            print(section)
+            if self.testing_mode:
+                print(section)
             for page_num in self.text:
-                #print(page_num)
+                if self.testing_mode:
+                    print(page_num)
                 hits, hit_ids = self.find_anchor_hits(section, self.text[page_num])
-                if len(hit_ids) > 1:
-                    print(page_num, hit_ids)
-                #if(page_num in [14]):
-                #   print(self.text[page_num])
+                if self.testing_mode:
+                    if len(hit_ids) > 1:
+                       print(page_num, hit_ids)
+                    #if(page_num in [14]):
+                    #   print(self.text[page_num])
                 self.hits_ll[section].append(page_num + self.page_num_fixer, hits, hit_ids)
 
     def find_anchor_hits(self, section, page):

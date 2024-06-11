@@ -78,14 +78,8 @@ def main():
     path_data = os.path.join(path_cwd, 'data')
     path_extracted_page_nums = os.path.join(path_data, 'extracted_page_nums')
     path_extracted_text_files = os.path.join(path_data, 'extracted_text_files')
-    path_current_extraction = os.path.join(path_extracted_text_files, f'run_{time}')
-    print(123)
-    if not os.path.exists(path_current_extraction):
-        os.makedirs(path_current_extraction)
     path_output_meta = os.path.join(path_data, 'output_meta')
-    path_gpt_meta = os.path.join(path_data, 'gpt_meta', f'run_{time}')
-    if not os.path.exists(path_gpt_meta):
-        os.makedirs(path_gpt_meta)
+    
 
     """
     load meta with page nums
@@ -93,9 +87,18 @@ def main():
     
     #filepath_df = pd.read_parquet(os.path.join(path_extracted_page_nums, 'page_nums_complete_24_04_26_15_06.parquet'))
     path_filepath_df = util.select_file(path_extracted_page_nums, 'Select Input File')
+    name_filepath_file = "_".join(path_filepath_df.split('/')[-1].split('_')[:-8])
     filepath_df = pd.read_parquet(path_filepath_df)
     filepath_dic = {row.doc_id: row for _, row in filepath_df.iterrows()}
     total_count = len(filepath_dic)
+
+    # file dependent paths
+    path_current_extraction = os.path.join(path_extracted_text_files, f'{name_filepath_file}_{time}')
+    if not os.path.exists(path_current_extraction):
+        os.makedirs(path_current_extraction)
+    path_gpt_meta = os.path.join(path_data, 'gpt_meta', f'{name_filepath_file}_{time}')
+    if not os.path.exists(path_gpt_meta):
+        os.makedirs(path_gpt_meta)
 
     """
     prepare section and mv anchors
@@ -152,9 +155,9 @@ def main():
     output_missing_df = output_df[mask_missing].copy()
     output_complete_df = output_df[~mask_missing].copy()
     
-    output_filename = f'extraction_{time}.parquet'
-    output_missing_filename = f'extraction_missing_{datetime.now().strftime("%y_%m_%d_%H_%M")}.parquet'
-    output_complete_filename = f'extraction_complete_{datetime.now().strftime("%y_%m_%d_%H_%M")}.parquet'
+    output_filename = f'extraction_{name_filepath_file}_{time}.parquet'
+    output_missing_filename = f'extraction_{name_filepath_file}_missing_{time}.parquet'
+    output_complete_filename = f'extraction_{name_filepath_file}_complete_{time}.parquet'
     
     output_df.to_parquet(os.path.join(path_output_meta, output_filename), index=False)
     output_missing_df.to_parquet(os.path.join(path_output_meta, output_missing_filename), index=False)
